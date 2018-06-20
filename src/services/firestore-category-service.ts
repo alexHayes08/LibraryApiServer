@@ -1,23 +1,36 @@
-import { injectable } from 'inversify';
+import 'reflect-metadata';
 
-import { Database } from '../models/database';
+import { inject, injectable } from 'inversify';
+
 import { Category } from '../models/category';
 import { CategoryService } from './category-service';
 import { PaginationResults, Paginate } from '../models/paginate';
 import { NotImplementedError } from '../models/errors';
+import { TYPES } from '../dependency-registrar';
+import { Database } from '../models/database';
+import { CollectionReference } from '@google-cloud/firestore';
+import { convertToPOD } from '../helpers/firestore-data-annotations';
 
 /**
  * Short-hand name for categories.
  */
 const CAT_COL_NAME = 'categories';
-const categoriesDb = Database.collection(CAT_COL_NAME);
+// const categoriesDb = FSDatabase.collection(CAT_COL_NAME);
 
 @injectable()
 class FirestoreCategoryService implements CategoryService {
+
+    private readonly categoriesDb: CollectionReference;
+
+    public constructor(@inject(TYPES.Database) database: Database) {
+        this.categoriesDb = database.collection(CAT_COL_NAME);
+    }
+
     public create(sitepool: Category|string, parentCategoryIds?: string[]): Promise<Category> {
+        const self = this;
         return new Promise<Category>(function(resolve, reject) {
 
-            let query = categoriesDb;
+            let query: CollectionReference = self.categoriesDb;
 
             if (parentCategoryIds != undefined && parentCategoryIds.length > 0) {
                 parentCategoryIds.map(ex =>
@@ -36,14 +49,13 @@ class FirestoreCategoryService implements CategoryService {
                             id: doc.id
                         });
 
-                        // Update the stored object to contain the id prop.
-                        doc.update(sp);
-
+                        // Update the stored object.
+                        doc.update(convertToPOD(sp));
                         resolve(sp);
                     }).catch(e => reject(e));
             } else {
                 query.doc(sitepool.id)
-                    .set(sitepool)
+                    .set(convertToPOD(sitepool))
                     .then(() => resolve(sitepool))
                     .catch(e => reject(e));
             }
@@ -51,10 +63,11 @@ class FirestoreCategoryService implements CategoryService {
     }
 
     public retrieve<U extends keyof Category>(fieldName: U, value: Category[U]): Promise<Category> {
+        const self = this;
         return new Promise<Category>(function(resolve, reject) {
 
             if (fieldName == 'id') {
-                categoriesDb.doc(<string>value)
+                self.categoriesDb.doc(<string>value)
                     .get()
                     .then(result => {
 
@@ -64,13 +77,18 @@ class FirestoreCategoryService implements CategoryService {
                             return;
                         }
 
-                        const { id, name } = result.data();
-                        const sp = new Category({ id, name });
+                        const { name } = result.data();
+                        const sp = new Category({
+                            id: result.id,
+                            name,
+                            parentCategoryIds: result.ref.path.split('/')
+                                .slice(1)
+                         });
 
                         resolve(sp);
                     });
             } else if (fieldName == 'name') {
-                categoriesDb.where('name', '==', value)
+                self.categoriesDb.where('name', '==', value)
                     .limit(1)
                     .get()
                     .then(result => {
@@ -81,8 +99,13 @@ class FirestoreCategoryService implements CategoryService {
                             return;
                         }
 
-                        const { id, name } = result.docs[0].data();
-                        const sp = new Category({ id, name });
+                        const doc = result.docs[0];
+                        const { name } = doc.data();
+                        const sp = new Category({
+                            id: doc.id,
+                            name: name,
+                            parentCategoryIds: doc.ref.path.split('/').slice(1)
+                        });
 
                         resolve(sp);
                     }).catch(e => reject(e));
@@ -93,6 +116,7 @@ class FirestoreCategoryService implements CategoryService {
     }
 
     public update(sitepool: Category): Promise<Category> {
+        const self = this;
         return new Promise<Category>(function(resolve, reject) {
 
             // Check if the id is set
@@ -101,7 +125,7 @@ class FirestoreCategoryService implements CategoryService {
                 return;
             }
 
-            categoriesDb.doc(sitepool.id)
+            self.categoriesDb.doc(sitepool.id)
                 .update({ ...sitepool, id: undefined })
                 .then(() => resolve(sitepool))
                 .catch(e => reject(e));
@@ -112,13 +136,14 @@ class FirestoreCategoryService implements CategoryService {
         const self = this;
         return new Promise(function(resolve, reject) {
             self.retrieve(fieldName, value)
-                .then(result => categoriesDb.doc(result.id).delete())
+                .then(result => self.categoriesDb.doc(result.id).delete())
                 .then(() => resolve(true))
                 .catch(e => reject(e));
         });
     }
 
     public paginate(paginate: Paginate<Category>): Promise<PaginationResults<Category>> {
+        const self = this;
 
         // Validate args.
         if (paginate.orderBy.length == 0) {
@@ -130,7 +155,10 @@ class FirestoreCategoryService implements CategoryService {
                 directionStr: firstDir
             } = paginate.orderBy[0];
 
-            let query = categoriesDb.orderBy(firstField, firstDir).limit(paginate.limit);
+            let query = self.categoriesDb
+                .orderBy(firstField, firstDir)
+                .limit(paginate.limit);
+
             for (let i = 1; i < paginate.orderBy.length; i++) {
                 const {
                     fieldPath,
@@ -168,7 +196,7 @@ class FirestoreCategoryService implements CategoryService {
     public getChildCategories(category: Category): Promise<Category[]> {
         const self = this;
         return new Promise<Category[]>(function(resolve, reject) {
-            categoriesDb.doc(category.id)
+            self.categoriesDb.doc(category.id)
                 .get()
                 .then(result => {
                     console.log(result);

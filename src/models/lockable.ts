@@ -1,4 +1,5 @@
 import { Lock } from './lock';
+import 'reflect-metadata';
 
 export class Lockable<T> {
     public name: string;

@@ -1,3 +1,6 @@
+// Import dependecy-registrar first
+import './dependency-registrar';
+
 import bodyParser from 'body-parser';
 import express from 'express';
 import session from 'express-session';

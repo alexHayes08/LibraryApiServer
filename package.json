@@ -7,11 +7,13 @@
     "start": "npm run serve",
     "build": "npm run build-ts && npm run tslint",
     "build-ts": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --forceExit --coverage --verbose --detectOpenHandles",
     "tslint": "tslint -c tslint.json -p tsconfig.json",
     "watch-node": "nodemon dist/index.js",
     "watch-ts": "tsc -w",
-    "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"yellow.bold,cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run watch-node\""
+    "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"yellow.bold,cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run watch-node\"",
+    "test-debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
+    "test-debug-win": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand"
   },
   "keywords": [
     "library"
@@ -24,7 +26,9 @@
     "@types/node": "^10.3.3",
     "@types/winston": "^2.3.9",
     "chai": "^4.1.2",
+    "jest": "^23.1.0",
     "nodemon": "^1.17.5",
+    "ts-jest": "^22.4.6",
     "ts-node": "^6.1.1",
     "tslint": "^5.10.0",
     "typescript": "^2.9.2"

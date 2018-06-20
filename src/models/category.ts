@@ -1,9 +1,4 @@
-import { index } from './decorators';
-import { inject } from 'inversify';
-
-import { CategoryService } from '../services/category-service';
-import { TYPES } from '../dependency-registrar';
-import { Updatable } from './updatable';
+import { index, exclude } from '../helpers/firestore-data-annotations';
 
 export interface CategoryData {
     id: string;
@@ -11,27 +6,19 @@ export interface CategoryData {
     parentCategoryIds?: string[];
 }
 
-export class Category implements CategoryData, Updatable<Category> {
-    @index
+export class Category implements CategoryData {
+
+    @index()
     public id: string;
 
-    @index
     public name: string;
 
+    @exclude()
     public parentCategoryIds?: string[];
 
-    public constructor(data: CategoryData,
-        @inject(TYPES.SitePoolService) private categoryService: CategoryService) {
+    public constructor(data: CategoryData) {
         this.id = data.id;
         this.name = data.name;
         this.parentCategoryIds = data.parentCategoryIds;
-    }
-
-    public update(): Promise<Category> {
-        const self = this;
-        return new Promise(function(resolve, reject) {
-            self.categoryService.update(self);
-            resolve(this);
-        });
     }
 }
