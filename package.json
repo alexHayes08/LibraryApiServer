@@ -5,15 +5,18 @@
   "main": "index.js",
   "scripts": {
     "start": "npm run serve",
-    "build": "npm run build-ts && npm run tslint",
+    "build": "npm run build-ts && npm run tslint && npm run copy-static-assets",
     "build-ts": "tsc",
+    "copy-static-assets": "ts-node copyStaticAssets.ts",
     "test": "jest --forceExit --coverage --verbose --detectOpenHandles",
     "tslint": "tslint -c tslint.json -p tsconfig.json",
     "watch-node": "nodemon dist/index.js",
     "watch-ts": "tsc -w",
     "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"yellow.bold,cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run watch-node\"",
     "test-debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
-    "test-debug-win": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand"
+    "test-debug-win": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand",
+    "serve": "node dist/index.js",
+    "serve-debug": "nodemon --inspect dist/index.js"
   },
   "keywords": [
     "library"
@@ -24,10 +27,12 @@
     "@types/express": "^4.16.0",
     "@types/express-session": "^1.15.10",
     "@types/node": "^10.3.3",
+    "@types/shelljs": "^0.8.0",
     "@types/winston": "^2.3.9",
     "chai": "^4.1.2",
     "jest": "^23.1.0",
     "nodemon": "^1.17.5",
+    "shelljs": "^0.8.2",
     "ts-jest": "^22.4.6",
     "ts-node": "^6.1.1",
     "tslint": "^5.10.0",
