@@ -1,14 +1,52 @@
-import { Lock } from './lock';
 import 'reflect-metadata';
 
-export class Lockable {
-    public name: string;
+import { DocumentReference } from '@google-cloud/firestore';
+
+import {
+    FirestoreData,
+    index,
+    subCollection
+} from '../helpers/firestore-data-annotations';
+import { Lock } from './lock';
+
+export interface LockableData {
+    id: string;
+    locks: Lock[];
+    name: string;
+    createdOn: Date;
+    categoryIds: DocumentReference[];
+}
+
+export class Lockable extends FirestoreData {
+    //#region Fields
+
+    @index()
     public id: string;
+
+    @subCollection()
     public locks: Lock[];
 
-    public constructor() {
-        this.locks = [];
+    public name: string;
+    public createdOn: Date;
+    public lastUsedOn: Date;
+    public categoryIds: DocumentReference[];
+
+    //#endregion
+
+    //#region Constructor
+
+    public constructor(data: LockableData) {
+        super();
+        this.id = data.id;
+        this.locks = data.locks;
+        this.name = data.name;
+        this.createdOn = data.createdOn;
+        this.categoryIds = data.categoryIds;
     }
+
+    //#endregion
+
+    //#region Functions
 
     public isLocked(): boolean {
         const now = Date.now();
@@ -22,4 +60,22 @@ export class Lockable {
                 && now < (lock.unlockedAt || now));
         return activeLocks.every(lock => lock.isShared);
     }
+
+    //#endregion
+}
+
+export function isLockableData(value: any): value is LockableData {
+    return value !== undefined
+        && value.id !== undefined
+        && value.name !== undefined
+        && value.locks !== undefined
+        && value.createdOn !== undefined
+        && value.categoryIds !== undefined;
+}
+
+export function isLockable(value: any): value is Lockable {
+    return value !== undefined
+        && value.isLocked != undefined
+        && value.isShared != undefined
+        && isLockableData(value);
 }

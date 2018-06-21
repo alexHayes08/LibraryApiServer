@@ -1,17 +1,13 @@
-import { User } from './user';
-
-export class LockInfo<T> {
-    owner: T;
-}
+import { UserData, User } from './user';
 
 export class Lock {
-    public readonly owner: User;
+    public readonly ownerId: string;
     public readonly isShared: boolean;
     public lockedAt?: Date;
     public unlockedAt?: Date;
 
-    public constructor(owner: User, isShared: boolean = false) {
-        this.owner = owner;
+    public constructor(ownerId: string, isShared: boolean = false) {
+        this.ownerId = ownerId;
         this.isShared = isShared;
     }
 }

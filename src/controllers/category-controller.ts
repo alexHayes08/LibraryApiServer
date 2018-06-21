@@ -1,29 +1,19 @@
-import express from 'express';
-import { Request, Response } from 'express';
-import { inject } from 'inversify';
+import express, { Request, Response } from 'express';
 
 import { container, TYPES } from '../dependency-registrar';
-import { CategoryService } from '../services/category-service';
-import { Category } from '../models/category';
 import { NotImplementedError } from '../models/errors';
+import { CategoryService } from '../services/category-service';
 
 // Get the site service
 const sitepoolService: CategoryService =
     container.get<CategoryService>(TYPES.CategoryService);
 
-// const sitePool = new Category({
-//     name: 'test',
-//     id: '123',
-// });
-// sitepoolService.delete('name', '123');
-
-export const sitesController = express.Router({
+export const categoryController = express.Router({
     mergeParams: true
 });
 
-
 // Get all sites
-sitesController.get('/sites/', (req: Request, res: Response) => {
+categoryController.get('/categories/', (req: Request, res: Response) => {
     sitepoolService.paginate({
         orderBy: [
             { fieldPath: 'name' }
@@ -35,46 +25,18 @@ sitesController.get('/sites/', (req: Request, res: Response) => {
 });
 
 // Get global settings
-sitesController.get('/settings/', (req: Request, res: Response) => {
+categoryController.get('/settings/', (req: Request, res: Response) => {
     res.json(new NotImplementedError());
 });
 
-// Get sitepool specific settings
-sitesController.get('/site/:sitename', (req: Request, res: Response) => {
+// Get category specific settings
+categoryController.get('/category/:categoryname', (req: Request, res: Response) => {
     res.json(new NotImplementedError());
 });
 
-// Get all categories in site
-sitesController.get('/site/:sitename', (req: Request, res: Response) => {
-
-    // Validate the sitename
-    if (req.params.sitename == undefined) {
-        res.json(new Error('Need to specify the sitename.'));
-    }
-
-    sitepoolService.retrieve('name', req.params.sitename);
-    // const query = Datastore.createQuery(req.params.sitename, 'category');
-    // .select("name");
-    // .filter("name", req.params.sitename);
-
-    // _firestoreService.categories.list({ pageSize: 10 })
-    //     .then(categories => HandleGoodResponse(res, null, categories))
-    //     .catch(error => HandleErrorResponse(res, 500, error));
-
-    // Datastore.runQuery(query)
-    //     .then((entities) => {
-    //         var cleanEntities = [];
-    //         entities[0].forEach((entity) => {
-    //             cleanEntities.push(entity[Datastore.KEY].name);
-    //         });
-    //         ResponseTemplates.HandleGoodResponse(res, null, cleanEntities);
-    //     }).catch((error) => {
-    //         stdErrorTemplate(res, 400, error)
-    //     });
-});
-
-// Delete a SitePool
-export const deleteSite = function (req: Request, res: Response) {
+// Delete a category
+categoryController.delete('/categories', (req: Request, res: Response) => {
+    res.json(new NotImplementedError());
     // const deletables = [];
 
     // const categoriesQ = Datastore.createQuery(req.params.sitename, 'category');
@@ -112,10 +74,11 @@ export const deleteSite = function (req: Request, res: Response) {
     //     }).catch((error) => {
     //         ResponseTemplates.HandleErrorResponse(res, 400, error);
     //     });
-};
+});
 
-// Create new SitePool
-export const putNewSitePool = function (req: Request, res: Response) {
+// Create new category
+categoryController.put('/category/:categoryname', (req: Request, res: Response) => {
+    res.json(new NotImplementedError());
     // const newSiteName = req.params.sitename;
     // const key = Datastore.key({
     //     namespace: newSiteName,
@@ -131,4 +94,4 @@ export const putNewSitePool = function (req: Request, res: Response) {
     // }).catch((error) => {
     //     stdErrorTemplate(res, 400, error)
     // });
-};
+});

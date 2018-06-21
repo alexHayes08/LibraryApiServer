@@ -1,5 +1,3 @@
-// import { describe, expect, it } from 'jest';
-
 import { container, TYPES } from '../src/dependency-registrar';
 import { Category } from '../src/models/category';
 import { CategoryService } from '../src/services/category-service';

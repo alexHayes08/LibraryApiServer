@@ -9,7 +9,6 @@ import { NotImplementedError } from '../models/errors';
 import { TYPES } from '../dependency-registrar';
 import { Database } from '../models/database';
 import { CollectionReference } from '@google-cloud/firestore';
-import { convertToPOD } from '../helpers/firestore-data-annotations';
 
 /**
  * Short-hand name for categories.
@@ -19,12 +18,21 @@ const CAT_COL_NAME = 'categories';
 
 @injectable()
 class FirestoreCategoryService implements CategoryService {
+    //#region Fields
 
     private readonly categoriesDb: CollectionReference;
 
-    public constructor(@inject(TYPES.Database) database: Database) {
-        this.categoriesDb = database.collection(CAT_COL_NAME);
+    //#endregion
+
+    //#region Constructor
+
+    public constructor(@inject(TYPES.Database) private database: Database) {
+        this.categoriesDb = this.database.collection(CAT_COL_NAME);
     }
+
+    //#endregion
+
+    //#region Functions
 
     public create(sitepool: Category|string, parentCategoryIds?: string[]): Promise<Category> {
         const self = this;
@@ -50,12 +58,12 @@ class FirestoreCategoryService implements CategoryService {
                         });
 
                         // Update the stored object.
-                        doc.update(convertToPOD(sp));
+                        doc.update(sp.toFirestoreDataObject());
                         resolve(sp);
                     }).catch(e => reject(e));
             } else {
                 query.doc(sitepool.id)
-                    .set(convertToPOD(sitepool))
+                    .set(sitepool.toFirestoreDataObject())
                     .then(() => resolve(sitepool))
                     .catch(e => reject(e));
             }
@@ -204,6 +212,8 @@ class FirestoreCategoryService implements CategoryService {
                 .catch(e => reject(e));
         });
     }
+
+    //#endregion
 }
 
 export { FirestoreCategoryService };
