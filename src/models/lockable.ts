@@ -1,10 +1,10 @@
 import { Lock } from './lock';
 import 'reflect-metadata';
 
-export class Lockable<T> {
+export class Lockable {
     public name: string;
     public id: string;
-    public locks: Lock<T>[];
+    public locks: Lock[];
 
     public constructor() {
         this.locks = [];
