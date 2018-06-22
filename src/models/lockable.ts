@@ -5,16 +5,23 @@ import { DocumentReference } from '@google-cloud/firestore';
 import {
     FirestoreData,
     index,
-    subCollection
+    subCollection,
+    exclude
 } from '../helpers/firestore-data-annotations';
 import { Lock } from './lock';
 
-export interface LockableData {
-    id: string;
-    locks: Lock[];
+export interface GenericLockableData {
     name: string;
     createdOn: Date;
-    categoryIds: DocumentReference[];
+    categories: string[];
+    data: {
+        [key: string]: any
+    };
+}
+
+export interface LockableData extends GenericLockableData {
+    id: string;
+    locks: Lock[];
 }
 
 export class Lockable extends FirestoreData {
@@ -29,7 +36,12 @@ export class Lockable extends FirestoreData {
     public name: string;
     public createdOn: Date;
     public lastUsedOn: Date;
-    public categoryIds: DocumentReference[];
+    public data: {
+        [key: string]: any
+    };
+
+    @exclude()
+    public categories: string[];
 
     //#endregion
 
@@ -40,8 +52,9 @@ export class Lockable extends FirestoreData {
         this.id = data.id;
         this.locks = data.locks;
         this.name = data.name;
+        this.data = data.data;
         this.createdOn = data.createdOn;
-        this.categoryIds = data.categoryIds;
+        this.categories = data.categories;
     }
 
     //#endregion
@@ -64,13 +77,21 @@ export class Lockable extends FirestoreData {
     //#endregion
 }
 
+export function isGenericLockableData(value: any): value is GenericLockableData {
+    return value !== undefined
+        && value.id === undefined
+        && value.name !== undefined
+        && value.createdOn !== undefined
+        && value.categories !== undefined;
+}
+
 export function isLockableData(value: any): value is LockableData {
     return value !== undefined
         && value.id !== undefined
         && value.name !== undefined
         && value.locks !== undefined
         && value.createdOn !== undefined
-        && value.categoryIds !== undefined;
+        && value.categories !== undefined;
 }
 
 export function isLockable(value: any): value is Lockable {

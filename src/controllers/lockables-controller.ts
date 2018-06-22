@@ -1,27 +1,35 @@
-import express from 'express';
-import { Request, Response } from 'express';
+import express, { Request, Response } from 'express';
 
 import { container, TYPES } from '../dependency-registrar';
 import { LockableService } from '../services/lockable-service';
-import { NotImplementedError } from '../models/errors';
-import { LockableData, Lockable, isLockableData } from '../models/lockable';
+import { NotImplementedError, MessageError } from '../models/errors';
+import { LockableData, Lockable, isLockableData, GenericLockableData, isGenericLockableData } from '../models/lockable';
+import { CategoryLockableMapService } from '../services/category-lockable-map-service';
+import { getAllGroups } from '../helpers/regex-helpers';
 
 const lockableService: LockableService =
     container.get<LockableService>(TYPES.LockableService);
+
+const categoryLockableMapService: CategoryLockableMapService =
+    container.get<CategoryLockableMapService>(TYPES.CategoryLockableMapService);
 
 export const lockablesController = express.Router({
     mergeParams: true
 });
 
-lockablesController.post('/lockable/:name', (req: Request, res: Response) => {
-    const lockableName: string = req.params.name;
-    const data: LockableData = req.body;
-    let _lockable: Lockable|string;
+/**
+ * Creates a lockable.
+ */
+lockablesController.post('/lockable/new', (req: Request, res: Response) => {
+    const data: LockableData|GenericLockableData = req.body;
+    let _lockable: Lockable|GenericLockableData;
 
     if (isLockableData(data)) {
         _lockable = new Lockable(data);
+    } else if (isGenericLockableData(data)) {
+        _lockable = data;
     } else {
-        _lockable = lockableName;
+        res.json(new MessageError('Invalid request body.'));
     }
 
     lockableService.create(_lockable)
@@ -76,7 +84,17 @@ lockablesController.delete('/lockable/by/:field/:name', (req: Request, res: Resp
  *
  * Second capturing group will match the rest of the url.
  */
-const lockByRegex = /^\/api\/lock\/by\/(id|name|category)((?:\/\w+)+)$/g;
+const lockByRegex = /^\/lock\/by\/(id|name|category)((?:\/\w+)+)$/g;
+
+/**
+ * First capture group will be one of the following:
+ * 1) id
+ * 2) name
+ * 3) category
+ *
+ * Second capturing group will match the rest of the url.
+ */
+const shareByRegex = /^\/share\/by\/(id|name|category)((?:\/\w+)+)$/g;
 
 /**
  * Adds a lock to a lockable.
@@ -86,10 +104,43 @@ const lockByRegex = /^\/api\/lock\/by\/(id|name|category)((?:\/\w+)+)$/g;
  * .../api/lock/by/name/alexHayes
  * .../api/lock/by/category/categoryA/subCategoryB/
  */
-lockablesController.post(/^\/api\/lock(?:\/\w+)+$/, (req: Request, res: Response) => {
-    const regexMatch = lockByRegex.exec(req.url);
-    const method: string = regexMatch[0];
-    const value: string = regexMatch[1];
+lockablesController.post(/^\/lock(?:\/\w+)+$/, (req: Request, res: Response) => {
+    const matches = getAllGroups(lockByRegex, req.url);
+    const match = matches[0];
+    const method: string = match[0];
+    const value: string = match[1];
+
+    switch (method) {
+        case 'id':
+            break;
+
+        case 'name':
+            break;
+
+        case 'category':
+            break;
+
+        default:
+            res.json(new NotImplementedError());
+            return;
+    }
+
+    res.json(new NotImplementedError());
+});
+
+/**
+ * Adds a shared-lock to a lockable.
+ *
+ * Url pattern looks like this:
+ * .../api/share/by/id/123123123
+ * .../api/share/by/name/alexHayes
+ * .../api/share/by/category/categoryA/subCategoryB/
+ */
+lockablesController.post(/^\/share(?:\/\w+)+$/, (req: Request, res: Response) => {
+    const matches = getAllGroups(lockByRegex, req.url);
+    const match = matches[0];
+    const method: string = match[0];
+    const value: string = match[1];
 
     switch (method) {
         case 'id':

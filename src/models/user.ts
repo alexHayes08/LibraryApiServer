@@ -1,6 +1,6 @@
 import { FirestoreData, index } from '../helpers/firestore-data-annotations';
 
-export interface GenericUserInfo {
+export interface GenericUserData {
     associatedEmails: string[];
     name: string;
 }
@@ -34,7 +34,7 @@ export class User extends FirestoreData implements UserData {
     //#endregion
 }
 
-export function isGenericUserInfo(value: any): value is GenericUserInfo {
+export function isGenericUserInfo(value: any): value is GenericUserData {
     return value !== undefined
         && value.associatedEmails !== undefined
         && value.name !== undefined;

@@ -18,7 +18,8 @@ describe('category-service', () => {
             container.get<CategoryService>(TYPES.CategoryService);
         const initialCategory = new Category({
             id: 'Test',
-            name: 'Test'
+            name: 'Test',
+            path: 'Test'
         });
         const finalCategory = await categoryService.create(initialCategory);
 

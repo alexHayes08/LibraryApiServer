@@ -8,7 +8,14 @@ describe('lockable-service', () => {
             const lockableService =
                 container.get<LockableService>(TYPES.LockableService);
 
-            const lockable = await lockableService.create('test');
+            const lockable = await lockableService.create({
+                name: 'Test',
+                createdOn: new Date(),
+                categories: [],
+                data: {
+                    testProp: 'a'
+                }
+            });
 
             expect(lockable.name).toBe('test');
         });

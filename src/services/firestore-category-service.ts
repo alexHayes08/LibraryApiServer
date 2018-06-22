@@ -1,3 +1,5 @@
+// FIXME: This file is probably going to be deleted.
+
 import 'reflect-metadata';
 
 import { inject, injectable } from 'inversify';
@@ -8,13 +10,13 @@ import { PaginationResults, Paginate } from '../models/paginate';
 import { NotImplementedError } from '../models/errors';
 import { TYPES } from '../dependency-registrar';
 import { Database } from '../models/database';
-import { CollectionReference } from '@google-cloud/firestore';
+import { CollectionReference, QueryDocumentSnapshot, DocumentReference } from '@google-cloud/firestore';
+import { CacheService } from './cache-service';
 
 /**
  * Short-hand name for categories.
  */
 const CAT_COL_NAME = 'categories';
-// const categoriesDb = FSDatabase.collection(CAT_COL_NAME);
 
 @injectable()
 class FirestoreCategoryService implements CategoryService {
@@ -26,7 +28,9 @@ class FirestoreCategoryService implements CategoryService {
 
     //#region Constructor
 
-    public constructor(@inject(TYPES.Database) private database: Database) {
+    public constructor(@inject(TYPES.Database) private readonly database: Database,
+        @inject(TYPES.StaticCache) private readonly cache: CacheService
+    ) {
         this.categoriesDb = this.database.collection(CAT_COL_NAME);
     }
 
@@ -34,91 +38,158 @@ class FirestoreCategoryService implements CategoryService {
 
     //#region Functions
 
-    public create(sitepool: Category|string, parentCategoryIds?: string[]): Promise<Category> {
+    public create(category: Category|string, parentCategoryNames?: string[]): Promise<Category> {
         const self = this;
         return new Promise<Category>(function(resolve, reject) {
-
-            let query: CollectionReference = self.categoriesDb;
-
-            if (parentCategoryIds != undefined && parentCategoryIds.length > 0) {
-                parentCategoryIds.map(ex =>
-                    query = query.doc(ex).collection(CAT_COL_NAME));
+            let key = 'create:' + parentCategoryNames.join('/');
+            if (typeof category === 'string') {
+                key += '/' + category;
+            } else {
+                key += '/' + category.name;
             }
 
-            if (typeof sitepool == 'string') {
+            const newcategory = self.cache.get<Category>(key);
 
-                // Do something
-                query.add({ name: sitepool })
-                    .then(doc => {
-
-                        // Create new SitePool with the data
-                        const sp = new Category({
-                            name: sitepool,
-                            id: doc.id
-                        });
-
-                        // Update the stored object.
-                        doc.update(sp.toFirestoreDataObject());
-                        resolve(sp);
-                    }).catch(e => reject(e));
+            if (newcategory !== undefined) {
+                resolve(newcategory);
             } else {
-                query.doc(sitepool.id)
-                    .set(sitepool.toFirestoreDataObject())
-                    .then(() => resolve(sitepool))
-                    .catch(e => reject(e));
+                let query: CollectionReference = self.categoriesDb;
+
+                if (parentCategoryNames != undefined && parentCategoryNames.length > 0) {
+
+                    // Iterate over each parent category and assert it exists.
+                    parentCategoryNames.map(async (parentName, index, arr) => {
+
+                        // Need to create the parent categories if they don't exist.
+                        const parentSearchResult = await query
+                            .where('name', '==', parentName)
+                            .limit(1)
+                            .get();
+                        let id: string;
+                        if (parentSearchResult.empty) {
+
+                            // Create parent category
+                            const parentCat = await self.create(parentName,
+                                arr.slice(0, index));
+                            id = parentCat.id;
+                        } else {
+                            id = parentSearchResult.docs[0].ref.id;
+                        }
+
+                        query = query.doc(id).collection(CAT_COL_NAME);
+                    });
+                }
+
+                if (typeof category == 'string') {
+
+                    // Do something
+                    query.add({ name: category })
+                        .then(doc => {
+
+                            // Create new SitePool with the data
+                            const sp = new Category({
+                                name: category,
+                                id: doc.id,
+                                path: doc.path
+                            });
+
+                            // Update the stored object.
+                            self.cache.set<Category>(key, sp);
+                            doc.update(sp.toFirestoreDataObject().data);
+                            resolve(sp);
+                        }).catch(e => reject(e));
+                } else {
+                    query.doc(category.id)
+                        .set(category.toFirestoreDataObject())
+                        .then(() => {
+
+                            // Store created category in the cache.
+                            self.cache.set(key, category);
+                            resolve(category);
+                        })
+                        .catch(e => reject(e));
+                }
             }
         });
     }
 
-    public retrieve<U extends keyof Category>(fieldName: U, value: Category[U]): Promise<Category> {
+    public retrieve<U extends keyof Category>(fieldName: U, value: Category[U], parentCategoryNames?: string[]): Promise<Category> {
         const self = this;
         return new Promise<Category>(function(resolve, reject) {
+            parentCategoryNames = parentCategoryNames || [];
+            const key = 'retrieve:'
+                + parentCategoryNames.join('/')
+                + value;
+            const cachedcategory = self.cache.get<Promise<Category>>(key);
 
-            if (fieldName == 'id') {
-                self.categoriesDb.doc(<string>value)
-                    .get()
-                    .then(result => {
-
-                        // Assert that result exists.
-                        if (result == undefined) {
-                            reject(new Error(`Failed to find a SitePool with an id of ${value}.`));
-                            return;
-                        }
-
-                        const { name } = result.data();
-                        const sp = new Category({
-                            id: result.id,
-                            name,
-                            parentCategoryIds: result.ref.path.split('/')
-                                .slice(1)
-                         });
-
-                        resolve(sp);
-                    });
-            } else if (fieldName == 'name') {
-                self.categoriesDb.where('name', '==', value)
-                    .limit(1)
-                    .get()
-                    .then(result => {
-
-                        // Check for any results
-                        if (result.empty) {
-                            reject(new Error(`Failed to find any SitePool with the name '${value}'.`));
-                            return;
-                        }
-
-                        const doc = result.docs[0];
-                        const { name } = doc.data();
-                        const sp = new Category({
-                            id: doc.id,
-                            name: name,
-                            parentCategoryIds: doc.ref.path.split('/').slice(1)
-                        });
-
-                        resolve(sp);
-                    }).catch(e => reject(e));
+            if (cachedcategory !== undefined) {
+                resolve(cachedcategory);
             } else {
-                reject(new NotImplementedError());
+                let categoriesCollection = self.categoriesDb;
+                parentCategoryNames.map(async (name, index, arr) => {
+                    const result = await categoriesCollection
+                        .where(fieldName, '==', value)
+                        .limit(1)
+                        .get();
+
+                    if (result.empty) {
+
+                        // Parent category doesn't exist, return error.
+                        reject(new Error('Parent category doesn\' exist.'));
+                        return;
+                    } else {
+                        categoriesCollection = result
+                            .docs[0].ref.collection(CAT_COL_NAME);
+                    }
+                });
+
+                if (fieldName == 'id') {
+                    categoriesCollection.doc(<string>value)
+                        .get()
+                        .then(result => {
+
+                            // Assert that result exists.
+                            if (result == undefined) {
+                                reject(`Failed to find a SitePool with an id of ${value}.`);
+                                return;
+                            }
+
+                            const { name } = result.data();
+                            const sp = new Category({
+                                id: result.id,
+                                name: name,
+                                path: result.ref.path
+                            });
+
+                            self.cache.set(key, sp);
+                            resolve(sp);
+                        });
+                } else if (fieldName == 'name') {
+                    categoriesCollection.where('name', '==', value)
+                        .limit(1)
+                        .get()
+                        .then(result => {
+
+                            // Check for any results
+                            if (result.empty) {
+                                reject(`Failed to find any SitePool with the name '${value}'.`);
+                                return;
+                            }
+
+                            const doc = result.docs[0];
+                            const { name } = doc.data();
+                            const sp = new Category({
+                                id: doc.id,
+                                name: name,
+                                path: doc.ref.path
+                            });
+
+                            self.cache.set(key, sp);
+                            resolve(sp);
+                        }).catch(e => reject(e));
+                } else {
+                    reject(new NotImplementedError());
+                }
             }
         });
     }
@@ -152,13 +223,13 @@ class FirestoreCategoryService implements CategoryService {
 
     public paginate(paginate: Paginate<Category>): Promise<PaginationResults<Category>> {
         const self = this;
-
-        // Validate args.
-        if (paginate.orderBy.length == 0) {
-            throw new Error('paginate.orderBy must have a length greater than zero.');
-        }
-
         return new Promise<PaginationResults<Category>>(function(resolve, reject) {
+
+            // Validate args.
+            if (paginate.orderBy.length == 0) {
+                reject(new Error('paginate.orderBy must have a length greater than zero.'));
+            }
+
             const { fieldPath: firstField,
                 directionStr: firstDir
             } = paginate.orderBy[0];
@@ -175,26 +246,59 @@ class FirestoreCategoryService implements CategoryService {
                 query = query.orderBy(fieldPath, directionStr);
             }
 
-            if (paginate.filter != undefined) {
+            if (paginate.filter !== undefined) {
                 const { field, comparator, value } = paginate.filter;
                 query = query.where(field, comparator, value);
+            }
+
+            if (paginate.startAfter !== undefined) {
+                const firstOrderBy = paginate.orderBy[0];
+                if (firstOrderBy.fieldPath === 'id') {
+                    query = query.startAt(paginate.startAfter.id);
+                } else if (firstOrderBy.fieldPath === 'name') {
+                    query = query.startAfter(paginate.startAfter.name);
+                }
+            }
+
+            if (paginate.endAt !== undefined) {
+                const firstOrderBy = paginate.orderBy[0];
+                if (firstOrderBy.fieldPath === 'id') {
+                    query = query.endBefore(paginate.startAfter.id);
+                } else if (firstOrderBy.fieldPath === 'name') {
+                    query = query.endBefore(paginate.startAfter.id);
+                }
             }
 
             query = query.limit(paginate.limit);
 
             query.get()
                 .then(result => {
-
-                    // Check if empty.
-                    if (result.empty) {
-
-                    }
-
-                    result.docs.map(doc => {
-                        const { id,
+                    const results = result.docs.map(doc => {
+                        const {
+                            id,
                             name,
-                            parentCategoryId
                         } = doc.data();
+
+                        return new Category({
+                            id: id,
+                            name: name,
+                            path: doc.ref.path });
+                    });
+
+                    resolve({
+                        results: results,
+                        next: {
+                            startAfter: results.length > 0 ? results[results.length - 1] : undefined,
+                            limit: paginate.limit,
+                            filter: paginate.filter,
+                            orderBy: paginate.orderBy
+                        },
+                        previous: {
+                            endAt: results.length > 0 ? results[0] : undefined,
+                            limit: paginate.limit,
+                            filter: paginate.filter,
+                            orderBy: paginate.orderBy
+                        }
                     });
                 })
                 .catch(e => reject(e));

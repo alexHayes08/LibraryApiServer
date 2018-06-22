@@ -1,20 +1,24 @@
-export class NotImplementedError extends Error {
-    constructor() {
+export class MessageError extends Error {
+    constructor(message: string) {
         super();
-        this.message = 'Not yet implemented.';
+        this.message = message;
     }
 }
 
-export class InvalidCastError extends Error {
+export class NotImplementedError extends MessageError {
     constructor() {
-        super();
-        this.message = 'Failed to cast object.';
+        super('Not yet implemented.');
+    }
+}
+
+export class InvalidCastError extends MessageError {
+    constructor() {
+        super('Failed to cast object.');
     }
 }
 
 export class InternalError extends Error {
     constructor() {
-        super();
-        this.message = 'An internal error occurred.';
+        super('An internal error occurred.');
     }
 }

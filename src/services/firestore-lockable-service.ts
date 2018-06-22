@@ -2,11 +2,12 @@ import { CollectionReference } from '@google-cloud/firestore';
 import { Database } from './../models/database';
 import { NotImplementedError } from './../models/errors';
 import { LockableService } from './lockable-service';
-import { Lockable } from '../models/lockable';
+import { Lockable, GenericLockableData, isLockableData } from '../models/lockable';
 import { Paginate, PaginationResults } from '../models/paginate';
 import { inject, injectable } from 'inversify';
 import { TYPES } from '../dependency-registrar';
 import { Lock } from '../models/lock';
+import { CategoryLockableMapService } from './category-lockable-map-service';
 
 @injectable()
 export class FirestoreLockableService implements LockableService {
@@ -18,7 +19,9 @@ export class FirestoreLockableService implements LockableService {
 
     //#region Constructor
 
-    public constructor(@inject(TYPES.Database) private database: Database) {
+    public constructor(@inject(TYPES.Database) private readonly database: Database,
+        @inject(TYPES.CategoryLockableMapService) private readonly categoryLockableMapService: CategoryLockableMapService
+    ) {
         this.lockableDb = this.database.collection('lockables');
     }
 
@@ -26,7 +29,7 @@ export class FirestoreLockableService implements LockableService {
 
     //#region Functions
 
-    public create(lockable: Lockable|string): Promise<Lockable> {
+    public create(lockable: Lockable|GenericLockableData|string): Promise<Lockable> {
         const self = this;
         return new Promise<Lockable>(function(resolve, reject) {
             if (typeof lockable === 'string') {
@@ -36,19 +39,63 @@ export class FirestoreLockableService implements LockableService {
                             id: doc.id,
                             name: lockable,
                             createdOn: new Date(),
-                            categoryIds: [],
-                            locks: []
+                            categories: [],
+                            locks: [],
+                            data: undefined
                         });
 
                         doc.update(_lockable.toFirestoreDataObject().data);
                         resolve(_lockable);
                     })
                     .catch(e => reject(e));
-            } else {
+            } else if (isLockableData(lockable)) {
                 self.lockableDb.doc(lockable.id)
                     .set(lockable.toFirestoreDataObject())
-                    .then(() => resolve(lockable))
+                    .then(result => {
+
+                        // Create each category async
+                        for (const category of lockable.categories) {
+
+                            // Don't await this, let it run async
+                            self.categoryLockableMapService.create({
+                                category: category,
+                                lockableRef: self.lockableDb.doc(lockable.id)
+                            });
+                        }
+
+                        resolve(lockable);
+                    })
                     .catch(e => reject(e));
+            } else {
+                self.lockableDb.add({
+                    name: lockable.name,
+                    locks: [],
+                    createdOn: lockable.createdOn
+                })
+                .then(doc => {
+
+                    // Create each category async
+                    for (const category of lockable.categories) {
+
+                        // Don't await this, let it run async
+                        self.categoryLockableMapService.create({
+                            category: category,
+                            lockableRef: doc
+                        });
+                    }
+
+                    const _lockable = new Lockable({
+                        id: doc.id,
+                        name: lockable.name,
+                        createdOn: lockable.createdOn,
+                        categories: lockable.categories,
+                        locks: [],
+                        data: lockable.data
+                    });
+
+                    resolve(_lockable);
+                })
+                .catch(e => reject(e));
             }
         });
     }
@@ -60,20 +107,37 @@ export class FirestoreLockableService implements LockableService {
                 self.lockableDb.doc(fieldName)
                     .get()
                     .then(doc => {
-                        const { createdOn, name, categoryIds } = doc.data();
+                        const { createdOn, name, data } = doc.data();
                         doc.ref.collection('locks')
                             .get()
-                            .then(result => {
+                            .then(async result => {
                                 const locks = result.docs.map(_doc => {
                                     const { ownerId, isShared } = _doc.data();
                                     return new Lock(ownerId, isShared);
                                 });
+
+                                const categories = await self.categoryLockableMapService.paginate({
+                                    orderBy: [
+                                        {
+                                            fieldPath: 'lockableRef',
+                                            directionStr: 'asc'
+                                        }
+                                    ],
+                                    limit: 10,
+                                    filter: {
+                                        field: 'lockableRef',
+                                        comparator: '==',
+                                        value: doc.ref
+                                    }
+                                });
+
                                 const lockable = new Lockable({
                                     id: doc.id,
                                     name: name,
                                     createdOn: createdOn,
                                     locks: locks,
-                                    categoryIds: categoryIds
+                                    categories: categories.results.map(catLockMap => catLockMap.category),
+                                    data: data
                                 });
                                 resolve(lockable);
                             })
@@ -92,10 +156,10 @@ export class FirestoreLockableService implements LockableService {
                         }
 
                         const doc = result.docs[0];
-                        const { createdOn, name, categoryIds } = doc.data();
+                        const { createdOn, name, data } = doc.data();
                         doc.ref.collection('locks')
                             .get()
-                            .then(result => {
+                            .then(async result => {
                                 let locks: Lock[] = [];
 
                                 if (!result.empty) {
@@ -105,12 +169,28 @@ export class FirestoreLockableService implements LockableService {
                                     });
                                 }
 
+                                const categories = await self.categoryLockableMapService.paginate({
+                                    orderBy: [
+                                        {
+                                            fieldPath: 'id',
+                                            directionStr: 'desc'
+                                        }
+                                    ],
+                                    limit: 10,
+                                    filter: {
+                                        field: 'lockableRef',
+                                        comparator: '==',
+                                        value: doc.ref
+                                    }
+                                });
+
                                 const lockable = new Lockable({
                                     id: doc.id,
                                     name: name,
                                     createdOn: createdOn,
                                     locks: locks,
-                                    categoryIds: categoryIds
+                                    categories: categories.results.map(catLockMap => catLockMap.category),
+                                    data: data
                                 });
                                 resolve(lockable);
                             })
@@ -136,8 +216,88 @@ export class FirestoreLockableService implements LockableService {
     }
 
     public paginate(paginate: Paginate<Lockable>): Promise<PaginationResults<Lockable>> {
+        const self = this;
         return new Promise<PaginationResults<Lockable>>(function(resolve, reject) {
-            reject(new NotImplementedError());
+            let query = self.lockableDb.limit(paginate.limit);
+
+            paginate.orderBy.map(orderBy => {
+                query = query.orderBy(orderBy.fieldPath, orderBy.directionStr);
+            });
+
+            if (paginate.filter !== undefined) {
+                const { field, comparator, value } = paginate.filter;
+                query = query.where(field, comparator, value);
+            }
+
+            if (paginate.startAfter !== undefined) {
+                const firstOrderBy = paginate.orderBy[0];
+                switch (firstOrderBy.fieldPath) {
+                    case 'id':
+                        query = query.startAfter(paginate.startAfter.id);
+                        break;
+
+                    case 'name':
+                        query = query.startAfter(paginate.startAfter.name);
+                        break;
+
+                    case 'createdOn':
+                        query = query.startAfter(paginate.startAfter.createdOn);
+                        break;
+                }
+            }
+
+            if (paginate.endAt !== undefined) {
+                const firstOrderBy = paginate.orderBy[0];
+                switch (firstOrderBy.fieldPath) {
+                    case 'id':
+                        query = query.startAfter(paginate.startAfter.id);
+                        break;
+
+                    case 'name':
+                        query = query.startAfter(paginate.startAfter.name);
+                        break;
+
+                    case 'createdOn':
+                        query = query.startAfter(paginate.startAfter.createdOn);
+                        break;
+                }
+            }
+
+            query.get()
+                .then(result => {
+                    const results = result.docs.map(doc => {
+                        const {
+                            name,
+                            createdOn,
+                            data
+                        } = doc.data();
+
+                        return new Lockable({
+                            id: doc.id,
+                            name: name,
+                            createdOn: createdOn,
+                            locks: [],
+                            categories: [],
+                            data: data
+                        });
+                    });
+
+                    resolve({
+                        results: results,
+                        next: {
+                            startAfter: results.length > 0 ? results[results.length - 1] : undefined,
+                            limit: paginate.limit,
+                            filter: paginate.filter,
+                            orderBy: paginate.orderBy
+                        },
+                        previous: {
+                            endAt: results.length > 0 ? results[0] : undefined,
+                            limit: paginate.limit,
+                            filter: paginate.filter,
+                            orderBy: paginate.orderBy
+                        }
+                    });
+                });
         });
     }
 

@@ -4,7 +4,7 @@ import { TYPES } from '../dependency-registrar';
 import { Database } from '../models/database';
 import { NotImplementedError } from '../models/errors';
 import { Paginate, PaginationResults } from '../models/paginate';
-import { User, GenericUserInfo } from '../models/user';
+import { User, GenericUserData } from '../models/user';
 import { UserService } from './user-service';
 import { CollectionReference } from '@google-cloud/firestore';
 
@@ -25,7 +25,7 @@ export class FirestoreUserService implements UserService {
 
     //#region Functions
 
-    public create(user: User|GenericUserInfo): Promise<User> {
+    public create(user: User|GenericUserData): Promise<User> {
         return new Promise<User>(function(resolve, reject) {
             reject(new NotImplementedError());
         });
