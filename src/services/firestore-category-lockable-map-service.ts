@@ -32,9 +32,7 @@ export class FirestoreCategoryLockableMapService implements CategoryLockableMapS
     public create(categoryLockableMap: GenericCategoryLockableMapData): Promise<CategoryLockableMap> {
         const self = this;
         return new Promise<CategoryLockableMap>(function(resolve, reject) {
-            self.categoryLockableMapDb.add({
-                categoryLockableMap
-            })
+            self.categoryLockableMapDb.add(categoryLockableMap)
             .then(result => {
                 const catLockMap = new CategoryLockableMap({
                     id: result.id,

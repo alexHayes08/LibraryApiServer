@@ -44,13 +44,13 @@ app.get('/test', async (req: Request, res: Response) => {
         res.json(new InternalError());
         return;
     }
-    const user = userRef.docs[0];
+    const user = userRef.docs[0].ref;
 
     const categoryRefs = await db.collection('category-lockable-map')
-        .where('lockableRef', '==', user.ref)
+        .where('lockableRef', '==', user)
         .get();
 
-    res.json(categoryRefs.docs.map(doc => doc.data()));
+    res.json(categoryRefs.docs.map(doc => doc.data().category));
 });
 
 app.use('/api', lockablesController);
@@ -63,7 +63,7 @@ const credentials = {
 
 const server = https.createServer(credentials, app);
 server.listen(app.get('port'), () => {
-    console.log('App is running @ http://localhost:%d',
+    console.log('App is running @ https://localhost:%d',
         app.get('port'),
         app.get('env'));
 });
