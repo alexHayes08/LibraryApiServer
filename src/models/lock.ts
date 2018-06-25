@@ -1,13 +1,22 @@
-import { UserData, User } from './user';
+import { exclude, FirestoreData } from './../helpers/firestore-data-annotations';
 
-export class Lock {
-    public readonly ownerId: string;
+export class Lock extends FirestoreData {
+
+    @exclude()
+    public readonly id: string|undefined;
+    public readonly ownerToken: string;
     public readonly isShared: boolean;
     public lockedAt?: Date;
     public unlockedAt?: Date;
+    public checkoutPeriod: number;
 
-    public constructor(ownerId: string, isShared: boolean = false) {
-        this.ownerId = ownerId;
+    public constructor(ownerToken: string,
+        isShared: boolean = false,
+        id?: string
+    ) {
+        super();
+        this.ownerToken = ownerToken;
         this.isShared = isShared;
+        this.id = id;
     }
 }

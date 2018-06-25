@@ -4,5 +4,5 @@ import { CrudPlusPattern } from './crud-plus-pattern';
 
 export interface LockableService extends CrudPlusPattern<Lockable, GenericLockableData, LockableData> {
     lock(lockable: Lockable, lock: Lock): void;
-    unlock(lockable: Lockable, lock: Lock): void;
+    unlock(lockable: Lockable, lockId: string): void;
 }

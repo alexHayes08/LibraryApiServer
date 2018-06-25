@@ -204,14 +204,31 @@ export class FirestoreLockableService implements LockableService {
     }
 
     public update(lockable: Lockable): Promise<Lockable> {
+        const self = this;
         return new Promise<Lockable>(function(resolve, reject) {
-            reject(new NotImplementedError());
+            self.lockableDb.doc(lockable.id)
+                .set(lockable.toFirestoreDataObject().data)
+                .then(result => resolve(lockable))
+                .catch(e => reject(e));
         });
     }
 
     public delete<U extends keyof Lockable>(fieldName: U, value: Lockable[U]): Promise<boolean> {
+        const self = this;
         return new Promise<boolean>(function(resolve, reject) {
-            reject(new NotImplementedError());
+            if (fieldName === 'id') {
+                self.lockableDb.doc(<string>value)
+                    .delete()
+                    .then(() => resolve(true))
+                    .catch(e => reject(e));
+            } else if (fieldName === 'name') {
+                self.retrieve(fieldName, value)
+                    .then(lockable => self.lockableDb.doc(lockable.id).delete())
+                    .then(() => resolve(true))
+                    .catch(e => reject(e));
+            } else {
+                reject(new NotImplementedError());
+            }
         });
     }
 
@@ -302,12 +319,24 @@ export class FirestoreLockableService implements LockableService {
     }
 
     public lock(lockable: Lockable, lock: Lock): Promise<Lockable> {
+        const self = this;
         return new Promise<Lockable>(function(resolve, reject) {
-            reject(new NotImplementedError());
+            self.lockableDb.doc(lockable.id)
+                .collection('locks')
+                .add(lock.toFirestoreDataObject().data)
+                .then(result => {
+                    const _lock = new Lock(lock.ownerToken,
+                        lock.isShared,
+                        result.id);
+                    _lock.lockedAt = lock.lockedAt;
+                    _lock.unlockedAt = lock.unlockedAt;
+                    resolve(lockable);
+                })
+                .catch(e => reject(e));
         });
     }
 
-    public unlock(lockable: Lockable, lock: Lock): Promise<Lockable> {
+    public unlock(lockable: Lockable, lockId: string): Promise<Lockable> {
         return new Promise<Lockable>(function(resolve, reject) {
             reject(new NotImplementedError());
         });
