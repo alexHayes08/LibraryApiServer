@@ -110,9 +110,11 @@ export class FirestoreCategoryLockableMapService implements CategoryLockableMapS
             });
 
             // Apply filters.
-            if (paginate.filter !== undefined) {
-                const { field, comparator, value } = paginate.filter;
-                query = query.where(field, comparator, value);
+            if (paginate.filters !== undefined) {
+                paginate.filters.map(filter => {
+                    const { field, comparator, value } = filter;
+                    query = query.where(field, comparator, value);
+                });
             }
 
             if (paginate.startAfter !== undefined) {
@@ -150,13 +152,13 @@ export class FirestoreCategoryLockableMapService implements CategoryLockableMapS
                         next: {
                             startAfter: results.length > 0 ? results[results.length - 1] : undefined,
                             limit: paginate.limit,
-                            filter: paginate.filter,
+                            filters: paginate.filters,
                             orderBy: paginate.orderBy
                         },
                         previous: {
                             endAt: results.length > 0 ? results[0] : undefined,
                             limit: paginate.limit,
-                            filter: paginate.filter,
+                            filters: paginate.filters,
                             orderBy: paginate.orderBy
                         }
                     });

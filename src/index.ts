@@ -8,10 +8,6 @@ import fs from 'fs';
 import https from 'https';
 
 import { lockablesController } from './controllers/lockables-controller';
-import { NotImplementedError, MessageError, InternalError } from './models/errors';
-import { Database } from './models/database';
-
-const db = container.get<Database>(TYPES.Database);
 
 const app = express();
 app.set('trust proxy', true);
@@ -29,28 +25,6 @@ app.get('/api/version', (req, res) => {
     res.json({
         version: '2018-6-18'
     });
-});
-
-app.get('/api/retrieve-credentials-for/:username', (req: Request, res: Response) => {
-    res.json(new NotImplementedError());
-});
-
-app.get('/test', async (req: Request, res: Response) => {
-    const userRef = await db.collection('lockables')
-        .where('name', '==', 'test-user-a')
-        .get();
-
-    if (userRef.empty) {
-        res.json(new InternalError());
-        return;
-    }
-    const user = userRef.docs[0].ref;
-
-    const categoryRefs = await db.collection('category-lockable-map')
-        .where('lockableRef', '==', user)
-        .get();
-
-    res.json(categoryRefs.docs.map(doc => doc.data().category));
 });
 
 app.use('/api', lockablesController);

@@ -6,6 +6,7 @@ import { NotImplementedError, MessageError } from '../models/errors';
 import { LockableData, Lockable, isLockableData, GenericLockableData, isGenericLockableData } from '../models/lockable';
 import { CategoryLockableMapService } from '../services/category-lockable-map-service';
 import { getAllGroups } from '../helpers/regex-helpers';
+import { isLock } from '../models/lock';
 
 const lockableService: LockableService =
     container.get<LockableService>(TYPES.LockableService);
@@ -105,6 +106,12 @@ const shareByRegex = /^\/share\/by\/(id|name|category)((?:\/\w+)+)$/g;
  * .../api/lock/by/category/categoryA/subCategoryB/
  */
 lockablesController.post(/^\/lock(?:\/\w+)+$/, (req: Request, res: Response) => {
+    const lock = req.body;
+
+    if (!isLock(lock)) {
+        res.json(new MessageError('Request body in invalid format.'));
+    }
+
     const matches = getAllGroups(lockByRegex, req.url);
     const match = matches[0];
     const method: string = match[0];
@@ -112,10 +119,12 @@ lockablesController.post(/^\/lock(?:\/\w+)+$/, (req: Request, res: Response) => 
 
     switch (method) {
         case 'id':
-            break;
-
         case 'name':
-            break;
+            lockableService.retrieve(method, value)
+                .then(lockable => lockableService.lock(lockable, lock))
+                .then(result => res.json(result))
+                .catch(e => res.json(e));
+            return;
 
         case 'category':
             break;
@@ -125,6 +134,7 @@ lockablesController.post(/^\/lock(?:\/\w+)+$/, (req: Request, res: Response) => 
             return;
     }
 
+    // Shouldn't reach here.
     res.json(new NotImplementedError());
 });
 

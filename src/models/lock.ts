@@ -20,3 +20,12 @@ export class Lock extends FirestoreData {
         this.id = id;
     }
 }
+
+export function isLock(value: any): value is Lock {
+    return value !== undefined
+        && value.ownerToken !== undefined
+        && value.isShared !== undefined
+        && value.lockedAt !== undefined
+        && value.unlockedAt !== undefined
+        && value.checkoutPeriod !== undefined;
+}

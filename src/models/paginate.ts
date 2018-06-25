@@ -6,9 +6,9 @@ export interface OrderBy {
 }
 
 export interface Paginate<T> {
-    orderBy: OrderBy[];
+    orderBy?: OrderBy[];
     limit: number;
-    filter?: Filter;
+    filters?: Filter[];
     startAfter?: T;
     endAt?: T;
 }

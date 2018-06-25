@@ -1,6 +1,6 @@
 import { CollectionReference } from '@google-cloud/firestore';
 import { Database } from './../models/database';
-import { NotImplementedError } from './../models/errors';
+import { NotImplementedError, MessageError, InternalError } from './../models/errors';
 import { LockableService } from './lockable-service';
 import { Lockable, GenericLockableData, isLockableData } from '../models/lockable';
 import { Paginate, PaginationResults } from '../models/paginate';
@@ -117,18 +117,12 @@ export class FirestoreLockableService implements LockableService {
                                 });
 
                                 const categories = await self.categoryLockableMapService.paginate({
-                                    orderBy: [
-                                        {
-                                            fieldPath: 'lockableRef',
-                                            directionStr: 'asc'
-                                        }
-                                    ],
                                     limit: 10,
-                                    filter: {
+                                    filters: [{
                                         field: 'lockableRef',
                                         comparator: '==',
                                         value: doc.ref
-                                    }
+                                    }]
                                 });
 
                                 const lockable = new Lockable({
@@ -170,18 +164,12 @@ export class FirestoreLockableService implements LockableService {
                                 }
 
                                 const categories = await self.categoryLockableMapService.paginate({
-                                    orderBy: [
-                                        {
-                                            fieldPath: 'id',
-                                            directionStr: 'desc'
-                                        }
-                                    ],
                                     limit: 10,
-                                    filter: {
+                                    filters: [{
                                         field: 'lockableRef',
                                         comparator: '==',
                                         value: doc.ref
-                                    }
+                                    }]
                                 });
 
                                 const lockable = new Lockable({
@@ -200,6 +188,70 @@ export class FirestoreLockableService implements LockableService {
             } else {
                 reject(new NotImplementedError());
             }
+        });
+    }
+
+    public retrieveLatestInCategory(categoryName: string,
+        isShared?: boolean,
+        isLocked?: boolean
+    ): Promise<Lockable> {
+        const self = this;
+        return new Promise<Lockable>(function(resolve, reject) {
+            self.categoryLockableMapService
+                .paginate({
+                    limit: 1,
+                    filters: [{
+                        field: 'category',
+                        comparator: '==',
+                        value: categoryName
+                    }]
+                })
+                .then(async paginationResult => {
+
+                    // Return if no results were found.
+                    if (paginationResult.results.length == 0) {
+                        reject(new MessageError('No results found.'));
+                        return;
+                    }
+
+                    let lockableRef: Lockable;
+                    do {
+                        const lockCatRef = paginationResult.results[0];
+                        const result = await lockCatRef.lockableRef.get();
+
+                        if (!result.exists) {
+                            continue;
+                        }
+
+                        const locksRef = await result.ref.collection('locks').get();
+                        const locks = locksRef.docs.map(doc => {
+                            const { ownerToken, isShared } = doc.data();
+                            const id = doc.id;
+                            return new Lock(ownerToken, isShared, id);
+                        });
+
+                        // Verify the lockable is available
+                        if (isShared === true && isLocked === false
+                            && locks.some(lock => lock.isShared === false
+                                && lock.unlockedAt === undefined)
+                        ) {
+                            continue;
+                        }
+
+                        const { name, createdOn, data } = result.data();
+
+                        lockableRef = new Lockable({
+                            id: result.id,
+                            locks: locks,
+                            name: name,
+                            createdOn: createdOn,
+                            categories: [],
+                            data: data
+                        });
+                    } while (lockableRef == undefined);
+                })
+                .catch(e => reject(e));
+            reject(new NotImplementedError());
         });
     }
 
@@ -237,13 +289,17 @@ export class FirestoreLockableService implements LockableService {
         return new Promise<PaginationResults<Lockable>>(function(resolve, reject) {
             let query = self.lockableDb.limit(paginate.limit);
 
-            paginate.orderBy.map(orderBy => {
-                query = query.orderBy(orderBy.fieldPath, orderBy.directionStr);
-            });
+            if (paginate.orderBy !== undefined) {
+                paginate.orderBy.map(orderBy => {
+                    query = query.orderBy(orderBy.fieldPath, orderBy.directionStr);
+                });
+            }
 
-            if (paginate.filter !== undefined) {
-                const { field, comparator, value } = paginate.filter;
-                query = query.where(field, comparator, value);
+            if (paginate.filters !== undefined) {
+                paginate.filters.map(filter => {
+                    const { field, comparator, value } = filter;
+                    query = query.where(field, comparator, value);
+                });
             }
 
             if (paginate.startAfter !== undefined) {
@@ -304,13 +360,13 @@ export class FirestoreLockableService implements LockableService {
                         next: {
                             startAfter: results.length > 0 ? results[results.length - 1] : undefined,
                             limit: paginate.limit,
-                            filter: paginate.filter,
+                            filters: paginate.filters,
                             orderBy: paginate.orderBy
                         },
                         previous: {
                             endAt: results.length > 0 ? results[0] : undefined,
                             limit: paginate.limit,
-                            filter: paginate.filter,
+                            filters: paginate.filters,
                             orderBy: paginate.orderBy
                         }
                     });

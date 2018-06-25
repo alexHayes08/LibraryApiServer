@@ -15,6 +15,6 @@ export const lockController = express.Router({
     mergeParams: true
 });
 
-lockController.get('/locks', (req: Request, res: Response) => {
+lockController.get('/locks/of/:id', (req: Request, res: Response) => {
     res.json(new NotImplementedError());
 });
