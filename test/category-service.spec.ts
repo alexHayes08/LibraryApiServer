@@ -1,13 +1,20 @@
 import { container, TYPES } from '../src/dependency-registrar';
-import { Category } from '../src/models/category';
-import { CategoryService } from '../src/services/category-service';
+import { CategoryLockableMap } from '../src/models/category-lockable-map';
+import { CategoryLockableMapService } from '../src/services/category-lockable-map-service';
+import { LockableService } from '../src/services/lockable-service';
 
 describe('category-service', () => {
     describe('#create', () => {
         it('Should create a new category named testA by only passing in string.', async () => {
-            const categoryService =
-                container.get<CategoryService>(TYPES.CategoryService);
-            const category = await categoryService.create('Test');
+            const categoryService = container
+                .get<CategoryLockableMapService>(TYPES.CategoryLockableMapService);
+            const lockableService = container
+                .get<LockableService>(TYPES.LockableService);
+            const lockable = await lockableService.retrieve('name', 'alex');
+            const category = await categoryService.create({
+                lockableRef: lockable,
+                category: "test"
+            });
 
             expect(category.name).toBe('Test');
         });
