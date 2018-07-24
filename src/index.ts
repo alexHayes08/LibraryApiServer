@@ -7,6 +7,7 @@ import session from 'express-session';
 import fs from 'fs';
 import https from 'https';
 
+import './config/mongoose.config';
 import { lockablesController } from './controllers/lockables-controller';
 
 const app = express();
