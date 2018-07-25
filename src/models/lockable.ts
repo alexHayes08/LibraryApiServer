@@ -40,9 +40,6 @@ export class Lockable extends FirestoreData {
         [key: string]: any
     };
 
-    public isLocked: boolean;
-    public isShared: boolean;
-
     @exclude()
     public categories: string[];
 
@@ -58,8 +55,29 @@ export class Lockable extends FirestoreData {
         this.data = data.data;
         this.createdOn = data.createdOn;
         this.categories = data.categories;
-        this.isLocked = false;
-        this.isShared = false;
+    }
+
+    //#endregion
+
+    //#region Functions
+
+    public getActiveLocks(): Lock[] {
+        return this.locks.filter(lock => lock.unlockedAt !== undefined
+            || lock.unlockedAt < new Date());
+    }
+
+    public isLocked(): boolean {
+        const activeLocks = this.getActiveLocks();
+        return activeLocks.length > 0 && activeLocks.every(lock => {
+            return lock.isShared === false;
+        });
+    }
+
+    public isShared(): boolean {
+        const activeLocks = this.getActiveLocks();
+        return activeLocks.length > 0 && activeLocks.every(lock => {
+            return lock.isShared === true;
+        });
     }
 
     //#endregion
@@ -84,7 +102,7 @@ export function isLockableData(value: any): value is LockableData {
 
 export function isLockable(value: any): value is Lockable {
     return value !== undefined
-        && value.isLocked != undefined
-        && value.isShared != undefined
+        && value.isLocked !== undefined
+        && value.isShared !== undefined
         && isLockableData(value);
 }
