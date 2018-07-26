@@ -7,7 +7,7 @@ const ObjectId = Schema.Types.ObjectId;
 
 const url = 'mongodb://127.0.0.1:27017';
 const dbName = 'libraryapi';
-mongoose.connect(`${url}/${dbName}`)
+mongoose.connect(`${url}/${dbName}`, { useNewUrlParser: true })
     .then(() => console.log('Successfully connected to mongodb.'))
     .catch(error => console.error(error));
 

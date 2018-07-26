@@ -9,8 +9,7 @@ export interface Paginate<T> {
     orderBy?: OrderBy[];
     limit: number;
     filters?: Filter[];
-    startAfter?: T;
-    endAt?: T;
+    skip?: number;
 }
 
 export interface Filter {
@@ -21,6 +20,6 @@ export interface Filter {
 
 export interface PaginationResults<T> {
     results: T[];
-    next: Paginate<T>;
-    previous: Paginate<T>;
+    next?: Paginate<T>;
+    previous?: Paginate<T>;
 }
