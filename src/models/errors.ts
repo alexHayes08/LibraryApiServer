@@ -22,3 +22,9 @@ export class InternalError extends Error {
         super('An internal error occurred.');
     }
 }
+
+export class AlreadyLockedError extends Error {
+    constructor() {
+        super('Lockable was already locked.');
+    }
+}

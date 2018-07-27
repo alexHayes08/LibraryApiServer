@@ -1,21 +1,13 @@
 import { injectable } from 'inversify';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 import { LockableService } from './lockable-service';
 import { LockableModel, LockModel } from '../config/mongoose.config';
 import { Lockable, GenericLockableData } from '../models/lockable';
-import { NotImplementedError } from '../models/errors';
+import { NotImplementedError, AlreadyLockedError } from '../models/errors';
 import { Lock } from '../models/lock';
 import { PaginationResults, Paginate } from '../models/paginate';
-
-function modelToLockable(model: Document): Lockable {
-    const data = model.toObject({
-        getters: true,
-        virtuals: true
-    });
-
-    return new Lockable(data);
-}
+import { rejects } from 'assert';
 
 @injectable()
 export class MongoLockableService implements LockableService {
@@ -35,12 +27,22 @@ export class MongoLockableService implements LockableService {
 
     //#region Functions
 
+    private modelToLockable(model: Document): Lockable {
+        const data = model.toObject({
+            getters: true,
+            virtuals: true
+        });
+
+        return new Lockable(data);
+    }
+
     public create(lockableData: GenericLockableData): Promise<Lockable> {
+        const self = this;
         return new Promise(function(resolve, reject) {
             const model = new LockableModel(lockableData);
             model.save()
                 .then(doc => {
-                    const lockable = modelToLockable(doc);
+                    const lockable = self.modelToLockable(doc);
                     resolve(lockable);
                 })
                 .catch(error => reject(error));
@@ -48,12 +50,13 @@ export class MongoLockableService implements LockableService {
     }
 
     public retrieve<U extends keyof Lockable>(fieldName: U, value: Lockable[U]): Promise<Lockable> {
+        const self = this;
         return new Promise(function(resolve, reject) {
             switch (fieldName) {
                 case 'id': {
                     LockableModel.findById(value)
                         .then(doc => {
-                            const lockable = modelToLockable(doc);
+                            const lockable = self.modelToLockable(doc);
                             resolve(lockable);
                         })
                         .catch(error => reject(error));
@@ -69,7 +72,7 @@ export class MongoLockableService implements LockableService {
                                 throw new Error();
                             }
 
-                            const lockable = modelToLockable(doc);
+                            const lockable = self.modelToLockable(doc);
                             resolve(lockable);
                         })
                         .catch(error => reject(error));
@@ -94,15 +97,22 @@ export class MongoLockableService implements LockableService {
     public delete<U extends keyof Lockable>(fieldName: U, value: Lockable[U]): Promise<boolean> {
         return new Promise(function(resolve, reject) {
             const findData = { };
-            findData[<string>fieldName] = value;
+            if (fieldName == 'id') {
+                findData['_id'] = Types.ObjectId(<string>value);
+            } else {
+                findData[<string>fieldName] = value;
+            }
             LockableModel.deleteOne(findData)
-                // tslint:disable-next-line:no-null-keyword
-                .then(res => resolve(res != null && res.isDeleted()))
+                .then(res => {
+                    // tslint:disable-next-line:no-null-keyword
+                    resolve(res.n > 0);
+                })
                 .catch(error => reject(error));
         });
     }
 
     public paginate(data: Paginate<Lockable>): Promise<PaginationResults<Lockable>> {
+        const self = this;
         return new Promise(function(resolve, reject) {
             const query = LockableModel.find();
 
@@ -136,7 +146,7 @@ export class MongoLockableService implements LockableService {
             }
 
             if (data.orderBy === undefined) {
-                query.sort('createdOn');
+                query.sort({ createdOn: -1 });
             } else {
                 const orderBy = { };
                 data.orderBy.map(by => {
@@ -154,7 +164,7 @@ export class MongoLockableService implements LockableService {
             query.limit(data.limit).then(docs => {
                 const skipped = data.skip || 0;
                 const results: Lockable[] = docs.map(doc => {
-                    return modelToLockable(doc);
+                    return self.modelToLockable(doc);
                 });
 
                 const paginationResults: PaginationResults<Lockable> = {
@@ -197,16 +207,93 @@ export class MongoLockableService implements LockableService {
         });
     }
 
-    public lock(lockable: Lockable, lock: Lock): void {
-        throw new NotImplementedError();
+    public lock(lockable: Lockable, lock: Lock): Promise<Lockable> {
+        const self = this;
+        return new Promise(function(resolve, reject) {
+            self.retrieve('id', lockable.id)
+                .then(_lockable => {
+
+                    // Verify the lockable isn't locked.
+                    if (_lockable.isLocked()) {
+                        reject(new AlreadyLockedError());
+                    }
+
+                    // Verify the lockable has no active locks on it if the
+                    // lock isn't shared.
+                    if (!lock.isShared && _lockable.isShared()) {
+                        reject(new AlreadyLockedError());
+                    }
+
+                    _lockable.locks.push(lock);
+                    self.update(_lockable);
+                })
+                .catch(error => reject(error));
+        });
     }
 
-    public unlock(lockable: Lockable, lockId: string): void {
-        throw new NotImplementedError();
+    public unlock(lockable: Lockable, lockId: string): Promise<Lockable> {
+        const self = this;
+        return new Promise(function(resolve, reject) {
+            self.retrieve('id', lockable.id)
+                .then(_lockable => {
+                    const _lock = _lockable.locks.find(l => l.id == lockId);
+
+                    // Assert lock isn't null.
+                    if (_lock === undefined) {
+                        reject(new Error('Failed to locate the lock.'));
+                    }
+
+                    _lock.unlockedAt = new Date();
+                    self.update(_lockable)
+                        .then(l => resolve(l))
+                        .catch(error => reject(error));
+                })
+                .catch (error => reject(error));
+        });
     }
 
-    public retrieveLatestInCategory(): Promise<Lockable> {
-        return Promise.reject(new NotImplementedError());
+    public retrieveLatestInCategory(categoryNames: string[],
+            isShared?: boolean,
+            isLocked?: boolean): Promise<Lockable> {
+        const self = this;
+        return new Promise(function(resolve, reject) {
+            const findModel = {
+                categories: {
+                    $all: categoryNames
+                }
+            };
+
+            if (isShared !== undefined) {
+                findModel['locks'] = {
+                    $all: {
+                        // tslint:disable-next-line:no-null-keyword
+                        unlockedAt: null,
+                        isShared: true
+                    }
+                };
+            } else if (isLocked !== undefined) {
+                findModel['locks'] = {
+                    $all: {
+                        // tslint:disable-next-line:no-null-keyword
+                        unlockedAt: null
+                    }
+                };
+            }
+
+            LockableModel.findOne(findModel)
+                .sort({ createdOn: -1 })
+                .then(doc => {
+                    // tslint:disable-next-line:no-null-keyword
+                    if (doc == null) {
+                        reject(new Error('Failed to find any lockables.'));
+                        return;
+                    }
+
+                    const lockable = self.modelToLockable(doc);
+                    resolve(lockable);
+                })
+                .catch(error => reject(error));
+        });
     }
 
     //#endregion

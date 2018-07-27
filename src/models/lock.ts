@@ -1,5 +1,12 @@
 import { exclude, FirestoreData } from './../helpers/firestore-data-annotations';
 
+export interface GenericLockData {
+    ownerToken: string;
+    isShared: boolean;
+    lockedAt: Date;
+    maxLeaseDate: Date;
+}
+
 export class Lock extends FirestoreData {
 
     @exclude()

@@ -4,9 +4,9 @@ import { CrudPlusPattern } from './crud-plus-pattern';
 
 export interface LockableService extends CrudPlusPattern<Lockable, GenericLockableData, LockableData> {
     retrieve<U extends keyof Lockable>(fieldName: U, value: Lockable[U]): Promise<Lockable>;
-    lock(lockable: Lockable, lock: Lock): void;
-    unlock(lockable: Lockable, lockId: string): void;
-    retrieveLatestInCategory(categoryName: string,
+    lock(lockable: Lockable, lock: Lock): Promise<Lockable>;
+    unlock(lockable: Lockable, lockId: string): Promise<Lockable>;
+    retrieveLatestInCategory(categoryNames: string[],
         isShared?: boolean,
         isLocked?: boolean): Promise<Lockable>;
 }
