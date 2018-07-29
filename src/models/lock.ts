@@ -1,5 +1,3 @@
-import { exclude, FirestoreData } from './../helpers/firestore-data-annotations';
-
 export interface GenericLockData {
     ownerToken: string;
     isShared: boolean;
@@ -7,9 +5,7 @@ export interface GenericLockData {
     maxLeaseDate: Date;
 }
 
-export class Lock extends FirestoreData {
-
-    @exclude()
+export class Lock {
     public readonly id: string|undefined;
     public readonly ownerToken: string;
     public readonly isShared: boolean;
@@ -18,10 +14,8 @@ export class Lock extends FirestoreData {
     public checkoutPeriod: number;
 
     public constructor(ownerToken: string,
-        isShared: boolean = false,
-        id?: string
-    ) {
-        super();
+            isShared: boolean = false,
+            id?: string) {
         this.ownerToken = ownerToken;
         this.isShared = isShared;
         this.id = id;

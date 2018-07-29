@@ -1,3 +1,4 @@
+import { GenericLockData } from './../models/lock';
 import { injectable } from 'inversify';
 import { Document, Types } from 'mongoose';
 
@@ -207,7 +208,7 @@ export class MongoLockableService implements LockableService {
         });
     }
 
-    public lock(lockable: Lockable, lock: Lock): Promise<Lockable> {
+    public lock(lockable: Lockable, lock: GenericLockData): Promise<Lockable> {
         const self = this;
         return new Promise(function(resolve, reject) {
             self.retrieve('id', lockable.id)
@@ -224,7 +225,13 @@ export class MongoLockableService implements LockableService {
                         reject(new AlreadyLockedError());
                     }
 
-                    _lockable.locks.push(lock);
+                    const _lockModel = new LockModel({
+                        lockedAt: lock.lockedAt,
+                        isShared: lock.isShared,
+                        maxLeased: lock.maxLeaseDate
+                    }).toObject();
+
+                    _lockable.locks.push(_lockModel);
                     self.update(_lockable);
                 })
                 .catch(error => reject(error));

@@ -1,5 +1,3 @@
-import mongoose, { Types } from 'mongoose';
-
 import { container, TYPES } from '../src/dependency-registrar';
 import { LockableService } from '../src/services/lockable-service';
 import { Lockable } from '../src/models/lockable';

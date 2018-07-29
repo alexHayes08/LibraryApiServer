@@ -1,7 +1,5 @@
 import 'reflect-metadata';
 
-import { DocumentReference } from '@google-cloud/firestore';
-
 import {
     FirestoreData,
     index,
@@ -24,31 +22,25 @@ export interface LockableData extends GenericLockableData {
     locks: Lock[];
 }
 
-export class Lockable extends FirestoreData {
+export class Lockable {
     //#region Fields
 
-    @index()
     public id: string;
 
-    @subCollection()
     public locks: Lock[];
-
     public name: string;
     public createdOn: Date;
     public lastUsedOn: Date;
+    public categories: string[];
     public data: {
         [key: string]: any
     };
-
-    @exclude()
-    public categories: string[];
 
     //#endregion
 
     //#region Constructor
 
     public constructor(data: LockableData) {
-        super();
         this.id = data.id;
         this.locks = data.locks;
         this.name = data.name;
