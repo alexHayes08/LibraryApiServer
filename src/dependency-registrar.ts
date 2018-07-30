@@ -9,15 +9,12 @@ export const TYPES = {
     InstancedCache: Symbol.for('InstanceCache'),
     CategoryLockableMapService: Symbol.for('CategoryLockableMapService'),
     Database: Symbol.for('Database'),
-    LockableService: Symbol.for('LockableService')
+    LockableService: Symbol.for('LockableService'),
+    LockService: Symbol.for('LockService')
 };
 
 // Set up container.
 const container = new Container();
-
-// import { Database, FSDatabase } from './models/database';
-// container.bind<Database>(TYPES.Database)
-//     .toConstantValue(FSDatabase);
 
 import { CacheService } from './services/cache-service';
 container
@@ -28,16 +25,16 @@ container
     .bind<CacheService>(TYPES.InstancedCache)
     .to(CacheService);
 
+import { LockService } from './services/lock-service';
+import { MongoLockService } from './services/mongo-lock-service';
+container
+    .bind<LockService>(TYPES.LockService)
+    .to(MongoLockService);
+
 import { LockableService } from './services/lockable-service';
 import { MongoLockableService } from './services/mongo-lockable-service';
 container
     .bind<LockableService>(TYPES.LockableService)
     .to(MongoLockableService);
-
-// import { CategoryLockableMapService } from './services/category-lockable-map-service';
-// import { FirestoreCategoryLockableMapService } from './services/firestore-category-lockable-map-service';
-// container
-//     .bind<CategoryLockableMapService>(TYPES.CategoryLockableMapService)
-//     .to(FirestoreCategoryLockableMapService);
 
 export { container };

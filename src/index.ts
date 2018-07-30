@@ -1,5 +1,5 @@
 // Import dependecy-registrar first
-import { container, TYPES } from './dependency-registrar';
+import * as dependecyRegistrar from './dependency-registrar';
 
 import bodyParser from 'body-parser';
 import express, { Request, Response } from 'express';
@@ -9,6 +9,7 @@ import https from 'https';
 
 import './config/mongoose.config';
 import { lockablesController } from './controllers/lockables-controller';
+import { lockController } from './controllers/lock-controller';
 
 const app = express();
 app.set('trust proxy', true);
@@ -22,13 +23,24 @@ app.use(session({
 }));
 
 app.get('/api/version', (req, res) => {
-    console.log(req.url);
     res.json({
         version: '2018-6-18'
     });
 });
 
+app.get('/api/running', (req, res) => {
+    res.status(200).end();
+});
+
 app.use('/api', lockablesController);
+app.use('/api', lockController);
+
+/**
+ * 404 handler.
+ */
+app.all('*', (req, res) => {
+    res.status(404).end();
+});
 
 // Https credentials
 const credentials = {

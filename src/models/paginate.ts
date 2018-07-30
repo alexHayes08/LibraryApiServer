@@ -8,12 +8,12 @@ export interface OrderBy {
 export interface Paginate<T> {
     orderBy?: OrderBy[];
     limit: number;
-    filters?: Filter[];
+    filters?: Filter<T>[];
     skip?: number;
 }
 
-export interface Filter {
-    field: string|FieldPath;
+export interface Filter<T> {
+    field: string|FieldPath|keyof T;
     comparator: WhereFilterOp;
     value: any;
 }
@@ -22,4 +22,20 @@ export interface PaginationResults<T> {
     results: T[];
     next?: Paginate<T>;
     previous?: Paginate<T>;
+}
+
+export function isOrderBy(value: any): value is OrderBy {
+    return value !== undefined
+        && value.fieldPath !== undefined;
+}
+
+export function isPaginate<T>(value: any): value is Paginate<T> {
+    return value !== undefined
+        && value.limit !== undefined;
+}
+
+export function isPaginationResults<T>(value: any): value is PaginationResults<T> {
+    return value !== undefined
+        && value.results !== undefined
+        && Array.isArray(value.results);
 }

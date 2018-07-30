@@ -41,6 +41,35 @@ const LockSchema = new Schema({
 
 export const LockModel = mongoose.model('Lock', LockSchema);
 
+const LockRecordSchema = new Schema({
+    lockableId: {
+        type: String,
+        required: true
+    },
+    lockedAt: {
+        type: Date,
+        required: true
+    },
+    unlockedAt: {
+        type: Date,
+        required: true
+    },
+    isShared: {
+        type: Boolean,
+        required: true
+    },
+    maxLeaseDate: {
+        type: Date,
+        required: true
+    }
+});
+
+LockRecordSchema.virtual('id').get(function () {
+    return this._id.toString();
+});
+
+export const LockRecordModel = mongoose.model('LockRecord', LockRecordSchema);
+
 const LockableSchema = new Schema({
     ownerToken: String,
     name: String,

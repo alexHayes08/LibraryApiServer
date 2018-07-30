@@ -1,11 +1,3 @@
-import 'reflect-metadata';
-
-import {
-    FirestoreData,
-    index,
-    subCollection,
-    exclude
-} from '../helpers/firestore-data-annotations';
 import { Lock } from './lock';
 
 export interface GenericLockableData {
@@ -30,7 +22,6 @@ export class Lockable {
     public locks: Lock[];
     public name: string;
     public createdOn: Date;
-    public lastUsedOn: Date;
     public categories: string[];
     public data: {
         [key: string]: any

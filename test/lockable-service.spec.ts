@@ -1,19 +1,37 @@
 import { container, TYPES } from '../src/dependency-registrar';
 import { LockableService } from '../src/services/lockable-service';
-import { Lockable } from '../src/models/lockable';
+import { Lockable, GenericLockableData } from '../src/models/lockable';
 import { LockModel } from '../src/config/mongoose.config';
+import { createItems, deleteItems } from '../src/helpers/test-helpers';
+import { GenericLockData } from '../src/models/lock';
 
-const generateAfterEach = function(lockables: Lockable[]) {
-    return async () => {
-        const lockableService = container
-            .get<LockableService>(TYPES.LockableService);
+const lockableService = container.get<LockableService>(TYPES.LockableService);
+let lockables = [];
 
-        while (lockables.length > 0) {
-            const lockable = lockables.pop();
-            await lockableService.delete('id', lockable.id);
-        }
+function generateLockableModel(index: number, categories: string[] = []): GenericLockableData {
+    categories = categories || [
+        'Blue',
+        'Purple',
+        'Green'
+    ];
+
+    const randomCategories: string[] = [];
+
+    // Assign random categories.
+    do {
+        const randomIndex = Math.random() * categories.length;
+
+        randomCategories.push(categories[randomIndex]);
+        categories = categories.filter(cat => cat !== categories[randomIndex]);
+    } while (Math.random() > .5 && categories.length > 0);
+
+    return {
+        name: `TestV${index}`,
+        createdOn: new Date(),
+        categories: randomCategories,
+        data: { }
     };
-};
+}
 
 const generateLockables = function(numberOfLockables: number, lockableService: LockableService): Promise<Lockable[]> {
     return new Promise(function(resolve, reject) {
@@ -191,11 +209,11 @@ describe('lockable-service', () => {
     });
 
     describe('#lock', () => {
-        const lockables = [];
+        const lockables: Lockable[] = [];
 
-        afterEach(generateAfterEach(lockables));
+        afterEach(() => deleteItems(lockables, lockableService));
 
-        it ('Should create a lock.', async () => {
+        it ('Should create locks on five lockables.', async () => {
             const lockableService = container
                 .get<LockableService>(TYPES.LockableService);
 
@@ -203,13 +221,58 @@ describe('lockable-service', () => {
             const newLockables = await generateLockables(5, lockableService);
             newLockables.map(lockable => lockables.push(lockable));
 
-            // TODO: Finish test.
+            const lockedAt = new Date();
+            const maxLeaseDate = new Date();
+            maxLeaseDate.setHours(maxLeaseDate.getHours() + 1);
+
+            const nonSharedLock: GenericLockData = {
+                ownerToken: '12345',
+                isShared: false,
+                lockedAt: lockedAt,
+                maxLeaseDate: maxLeaseDate
+            };
+
+            for (const lockable of lockables) {
+                const lockedLockable = await lockableService
+                    .lock(lockable, nonSharedLock);
+
+                expect(lockedLockable.locks.length).toBe(1);
+                expect(lockedLockable.locks[0].isShared).toBe(false);
+            }
+        });
+    });
+
+    describe('#unlock', () => {
+        afterEach(async () => deleteItems(lockables, lockableService));
+
+        it ('Should move a lock from a lockable to the locks table.', async () => {
+
+            // Create one lockable.
+            lockables = await createItems(1, generateLockableModel,
+                lockableService);
+
+            const maxLeaseDate = new Date();
+            maxLeaseDate.setHours(maxLeaseDate.getHours() + 1);
+
+            // Lock it.
+            const lockedLockable = await lockableService.lock(lockables[0], {
+                ownerToken: '12345',
+                lockedAt: new Date(),
+                maxLeaseDate,
+                isShared: true
+            });
+
+            const lock = lockedLockable.locks[0];
+            const unlockedLockable = await lockableService.unlock(
+                lockables[0],
+                lock.id);
+
+            expect(lockedLockable.locks.length).toBe(1);
+            expect(unlockedLockable.locks.length).toBe(0);
         });
     });
 
     describe('#retrieveLatestInCategory', () => {
-        const lockables = [];
-
         afterEach(async () => {
             const lockableService = container
                 .get<LockableService>(TYPES.LockableService);

@@ -7,10 +7,10 @@ import { Paginate, PaginationResults } from '../models/paginate';
  * type parameter returned when paginating (foreign keys/subcollections won't
  * be populated).
  */
-export interface CrudPlusPattern<T, U, V> {
+export interface CrudPlusPattern<T, U> {
     create(model: U): Promise<T>;
     retrieve<U extends keyof T>(fieldName: U, value: T[U]): Promise<T>;
     update(model: T): Promise<T>;
     delete<U extends keyof T>(fieldName: U, value: T[U]): Promise<boolean>;
-    paginate(data: Paginate<V>): Promise<PaginationResults<V>>;
+    paginate(data: Paginate<T>): Promise<PaginationResults<T>>;
 }
