@@ -16,7 +16,6 @@ mongoose.connect(`${url}/${dbName}`, { useNewUrlParser: true })
 //#region Init schemas
 
 const LockSchema = new Schema({
-    id: ObjectId,
     lockedAt: {
         type: Date,
         required: true
@@ -37,6 +36,10 @@ const LockSchema = new Schema({
             return now;
         }
     }
+});
+
+LockSchema.virtual('id').get(function () {
+    return this['_id'].toString();
 });
 
 export const LockModel = mongoose.model('Lock', LockSchema);
