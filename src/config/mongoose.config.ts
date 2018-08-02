@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 
 const Schema = mongoose.Schema;
-const ObjectId = Schema.Types.ObjectId;
 
 //#region Setup connection
 
@@ -14,6 +13,8 @@ mongoose.connect(`${url}/${dbName}`, { useNewUrlParser: true })
 //#endregion
 
 //#region Init schemas
+
+//#region Lock
 
 const LockSchema = new Schema({
     lockedAt: {
@@ -44,6 +45,10 @@ LockSchema.virtual('id').get(function () {
 
 export const LockModel = mongoose.model('Lock', LockSchema);
 
+//#endregion
+
+//#region LockRecord
+
 const LockRecordSchema = new Schema({
     lockableId: {
         type: String,
@@ -72,6 +77,10 @@ LockRecordSchema.virtual('id').get(function () {
 });
 
 export const LockRecordModel = mongoose.model('LockRecord', LockRecordSchema);
+
+//#endregion
+
+//#region Lockable
 
 const LockableSchema = new Schema({
     ownerToken: String,
@@ -104,5 +113,27 @@ LockableSchema.methods.isShared = function() {
 };
 
 export const LockableModel = mongoose.model('Lockable', LockableSchema);
+
+//#endregion
+
+//#region CronJob
+
+const CronJobSchema = new Schema({
+    id: {
+        type: String,
+        required: true
+    },
+    name: {
+        type: String,
+        required: true
+    },
+    every: Schema.Types.Mixed,
+    lastRun: Date,
+    lastSuccessfulRun: Date
+});
+
+export const CronJobModel = mongoose.model('CronJob', CronJobSchema);
+
+//#endregion
 
 //#endregion
