@@ -36,7 +36,7 @@ paths:
         200:
           description: "Server is running."
       security:
-      - google_id_token: []
+      - google_jwt: []
   "/api/lockable/create":
     post:
       description: "Creates a Lockable."
@@ -55,7 +55,7 @@ paths:
           schema:
             $ref: "#/definitions/lockable"
       security:
-      - google_id_token: []
+      - google_jwt: []
   "/api/lockable/create-many":
     post:
       description: "Batch version of create."
@@ -75,7 +75,7 @@ paths:
             items:
               $ref: "#/definitions/lockable"
       security:
-      - google_id_token: []
+      - google_jwt: []
   "/api/lockable/retrieve":
     post:
       description: "Retrieves a lockable."
@@ -95,7 +95,7 @@ paths:
         404:
           description: "Failed to locate any lockable matching the value."
       security:
-      - google_id_token: []
+      - google_jwt: []
   "/api/lockable/update":
     put:
       description: "Updates a lockable."
@@ -111,7 +111,7 @@ paths:
           schema:
             $ref: "#/definitions/lockable"
       security:
-      - google_id_token: []
+      - google_jwt: []
   "/api/lockable/delete":
     post:
       description: "Delete a lockable."
@@ -124,6 +124,8 @@ paths:
       responses:
         200:
           description: "Successfully deleted the lockable."
+      security:
+      - google_jwt: []
   "/api/lockable/paginate":
     post:
       description: "Paginate over lockables."
@@ -138,6 +140,8 @@ paths:
           description: "Successfully applied paginate data and found results."
           schema:
             $ref: "#/definitions/lockablePaginationResults"
+      security:
+      - google_jwt: []
   "/api/lockable/lock":
     post:
       description: "Applies a lock to a lockable."
@@ -152,6 +156,8 @@ paths:
           description: "Successfully added a lock."
           schema:
             $ref: "#/definitions/lockable"
+      security:
+      - google_jwt: []
   "/api/lockable/unlock":
     post:
       description: "Remove a lock from the lockable."
@@ -171,6 +177,8 @@ paths:
           description: "Successfully removed the lock from the lockable."
           schema:
             $ref: "#/definitions/lockable"
+      security:
+      - google_jwt: []
   "/api/inactive-lock/{id}":
     get:
       description: "Retrieves a lock by id."
@@ -185,6 +193,8 @@ paths:
           description: "Successfully retrieved a lock matching the id."
           schema:
             $ref: "#/definitions/lock"
+      security:
+      - google_jwt: []
   "/api/inactive-locks":
     post:
       description: "Paginate over inactive locks."
@@ -199,6 +209,8 @@ paths:
           description: "Successfully retrieved locks with the paginate data."
           schema:
             $ref: "#/definitions/lockPaginationResults"
+      security:
+      - google_jwt: []
 definitions:
   lockPaginationResults:
     type: "object"
