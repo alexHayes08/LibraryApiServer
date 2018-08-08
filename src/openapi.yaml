@@ -1,0 +1,377 @@
+# [START swagger]
+swagger: "2.0"
+info:
+  description: "A simple library api for retrieving/locking/unlocking resources."
+  title: "Lockables API"
+  version: "1.0.0"
+host: "echo-api.endpoints.lockablesapi.cloud.goog"
+# [END swagger]
+consumes:
+- "application/json"
+produces:
+- "application/json"
+schemes:
+# Uncomment the next line if you configure SSL for this API.
+#- "https"
+- "http"
+paths:
+  "/api/version":
+    get:
+      description: "Returns the version of the server."
+      operationId: "version"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Echo"
+          schema:
+            $ref: "#/definitions/versionResponse"
+      security:
+      - google_jwt: []
+  "/api/running":
+    get:
+      description: "Used to check if the server is running."
+      operationId: "running"
+      responses:
+        200:
+          description: "Server is running."
+      security:
+      - google_id_token: []
+  "/api/lockable/create":
+    post:
+      description: "Creates a Lockable."
+      operationId: "lockablecreate"
+      parameters:
+        - in: body
+          name: "lockable"
+          description: "The lockable to create."
+          schema:
+            $ref: "#/definitions/genericLockable"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Successful lockable creation."
+          schema:
+            $ref: "#/definitions/lockable"
+      security:
+      - google_id_token: []
+  "/api/lockable/create-many":
+    post:
+      description: "Batch version of create."
+      operationId: "lockablecreatemany"
+      parameters:
+        - in: body
+          name: "lockables"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/genericLockable"
+      responses:
+        200:
+          description: "Successfully creation of lockables."
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/lockable"
+      security:
+      - google_id_token: []
+  "/api/lockable/retrieve":
+    post:
+      description: "Retrieves a lockable."
+      operationId: "lockableretrieve"
+      parameters:
+        - in: body
+          name: "Retrieval information."
+          schema:
+            $ref: "#/definitions/retrieveRequest"
+      responses:
+        200:
+          description: "Successfully retrieved a lockable."
+          schema:
+            $ref: "#/definitions/lockable"
+        400:
+          description: "Method in request body not supported."
+        404:
+          description: "Failed to locate any lockable matching the value."
+      security:
+      - google_id_token: []
+  "/api/lockable/update":
+    put:
+      description: "Updates a lockable."
+      operationId: "lockableupdate"
+      parameters:
+        - in: body
+          name: "Lockable"
+          schema:
+            $ref: "#/definitions/lockable"
+      responses:
+        200:
+          description: "Successfully updated the lockable."
+          schema:
+            $ref: "#/definitions/lockable"
+      security:
+      - google_id_token: []
+  "/api/lockable/delete":
+    post:
+      description: "Delete a lockable."
+      operationId: "lockabledelete"
+      parameters:
+        - in: body
+          name: "Retrieval information."
+          schema:
+            $ref: "#/definitions/retrieveRequest"
+      responses:
+        200:
+          description: "Successfully deleted the lockable."
+  "/api/lockable/paginate":
+    post:
+      description: "Paginate over lockables."
+      operationId: "lockablepaginate"
+      parameters:
+        - in: body
+          name: "PaginateDate"
+          schema:
+            $ref: "#/definitions/paginate"
+      responses:
+        200:
+          description: "Successfully applied paginate data and found results."
+          schema:
+            $ref: "#/definitions/lockablePaginationResults"
+  "/api/lockable/lock":
+    post:
+      description: "Applies a lock to a lockable."
+      operationId: "lockablelock"
+      parameters:
+        - in: body
+          name: "Lock and lockable data."
+          schema:
+            $ref: "#/definitions/lockLockable"
+      responses:
+        200:
+          description: "Successfully added a lock."
+          schema:
+            $ref: "#/definitions/lockable"
+  "/api/lockable/unlock":
+    post:
+      description: "Remove a lock from the lockable."
+      operationId: "lockableunlock"
+      parameters:
+        - in: body
+          name: "Lock and lockable data."
+          schema:
+            type: "object"
+            properties:
+              lockId:
+                type: "string"
+              lockableId:
+                type: "string"
+      responses:
+        200:
+          description: "Successfully removed the lock from the lockable."
+          schema:
+            $ref: "#/definitions/lockable"
+  "/api/inactive-lock/{id}":
+    get:
+      description: "Retrieves a lock by id."
+      operationId: "lockgetinactivelockbyid"
+      parameters:
+        - in: path
+          name: id
+          type: "string"
+          required: true
+      responses:
+        200:
+          description: "Successfully retrieved a lock matching the id."
+          schema:
+            $ref: "#/definitions/lock"
+  "/api/inactive-locks":
+    post:
+      description: "Paginate over inactive locks."
+      operationId: "lockpaginate"
+      parameters:
+        - in: body
+          name: "Lock pagination data."
+          schema:
+            $ref: "#/definitions/paginate"
+      responses:
+        200:
+          description: "Successfully retrieved locks with the paginate data."
+          schema:
+            $ref: "#/definitions/lockPaginationResults"
+definitions:
+  lockPaginationResults:
+    type: "object"
+    required:
+      - results
+    properties:
+      results:
+        $ref: "#/definitions/lock"
+      next:
+        $ref: "#/definitions/paginate"
+      previous:
+        $ref: "#/definitions/paginate"
+  lockLockable:
+    type: "object"
+    required:
+      - lock
+      - lockableId
+    properties:
+      lock:
+        $ref: "#/definitions/lock"
+      lockableId:
+        type: "string"
+  lockablePaginationResults:
+    type: "object"
+    required:
+      - results
+    properties:
+      results:
+        type: "array"
+        items:
+          $ref: "#/definitions/lockable"
+      next:
+        $ref: "#/definitions/paginate"
+      previous:
+        $ref: "#/definitions/paginate"
+  filter:
+    type: "object"
+    required:
+      - field
+      - comparator
+      - value
+    properties:
+      field:
+        type: "string"
+      comparator:
+        type: "string"
+      value:
+        type: "object"
+  orderBy:
+    required:
+      - fieldPath
+    type: "object"
+    properties:
+      fieldPath:
+        type: "string"
+      directionStr:
+        type: "string"
+  paginate:
+    type: "object"
+    required:
+      - limit
+    properties:
+      orderBy:
+        $ref: "#/definitions/orderBy"
+      limit:
+        type: "number"
+      skip:
+        type: "number"
+      filter:
+        $ref: "#/definitions/filter"
+  retrieveRequest:
+    type: "object"
+    required:
+      - method
+      - value
+    properties:
+      method:
+        type: "string"
+      value:
+        type: "object"
+  versionResponse:
+    type: "object"
+    properties:
+      version:
+        type: "string"
+  genericLockable:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      createdOn:
+        type: "string"
+      categories:
+        type: "array"
+        items:
+          type: "string"
+      data:
+        type: "object"
+  lockable:
+    type: "object"
+    required:
+      - id
+      - name
+      - createdOn
+      - categories
+      - locks
+    properties:
+      id: 
+        type: "string"
+      name: 
+        type: "string"
+      createdOn:
+        type: "object"
+      categories:
+        type: "array"
+        items:
+          type: "string"
+      locks:
+        type: "array"
+        items:
+          $ref: "#/definitions/lock"
+      data:
+        type: "object"
+  lock:
+    type: "object"
+    required:
+      - id
+      - isShared
+      - ownerToken
+      - maxLeaseDate
+    properties:
+      id:
+        type: "string"
+      isShared:
+        type: "boolean"
+      ownerToken:
+        type: "string"
+      lockedAt:
+        type: "string"
+      maxLeaseDate:
+        type: "string"
+# This section requires all requests to any path to require an API key.
+security:
+- api_key: []
+securityDefinitions:
+  # This section configures basic authentication with an API key.
+  api_key:
+    type: "apiKey"
+    name: "key"
+    in: "query"
+  # This section configures authentication using Google API Service Accounts
+  # to sign a json web token. This is mostly used for server-to-server
+  # communication.
+  google_jwt:
+    authorizationUrl: ""
+    flow: "implicit"
+    type: "oauth2"
+    # This must match the 'iss' field in the JWT.
+    x-google-issuer: "jwt-client.endpoints.sample.google.com"
+    # Update this with your service account's email address.
+    x-google-jwks_uri: "https://www.googleapis.com/service_accounts/v1/jwk/YOUR-SERVICE-ACCOUNT-EMAIL"
+    # This must match the "aud" field in the JWT. You can add multiple
+    # audiences to accept JWTs from multiple clients.
+    x-google-audiences: "echo.endpoints.sample.google.com"
+  # This section configures authentication using Google OAuth2 ID Tokens.
+  # ID Tokens can be obtained using OAuth2 clients, and can be used to access
+  # your API on behalf of a particular user.
+  google_id_token:
+    authorizationUrl: ""
+    flow: "implicit"
+    type: "oauth2"
+    x-google-issuer: "https://accounts.google.com"
+    x-google-jwks_uri: "https://www.googleapis.com/oauth2/v3/certs"
+    # Your OAuth2 client's Client ID must be added here. You can add
+    # multiple client IDs to accept tokens from multiple clients.
+    x-google-audiences: "YOUR-CLIENT-ID"

@@ -11,6 +11,7 @@ import https from 'https';
 import './config/mongoose.config';
 import { lockablesController } from './controllers/lockables-controller';
 import { lockController } from './controllers/lock-controller';
+import { runInNewContext } from 'vm';
 
 const app = express();
 app.set('trust proxy', true);
@@ -23,6 +24,18 @@ app.use(session({
     saveUninitialized: true,
     secret: '1234-1234-1234-1234'
 }));
+
+// Authentication handler.
+app.all('*', (req: Request, res: Response, next) => {
+    let authUser: Object = { id: 'anonymous' };
+    const encodedInfo = req.get('X-Endpoint-API-UserInfo');
+    if (encodedInfo) {
+        authUser = Buffer.from(encodedInfo, 'base64').toJSON();
+    }
+
+    req.user = authUser;
+    next();
+});
 
 app.get('/api/version', (req: Request, res: Response) => {
     res.json({
