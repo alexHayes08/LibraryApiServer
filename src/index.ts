@@ -24,13 +24,13 @@ app.use(session({
     secret: '1234-1234-1234-1234'
 }));
 
-app.get('/api/version', (req, res) => {
+app.get('/api/version', (req: Request, res: Response) => {
     res.json({
         version: '2018-6-18'
     });
 });
 
-app.get('/api/running', (req, res) => {
+app.get('/api/running', (req: Request, res: Response) => {
     res.status(200).end();
 });
 
@@ -40,21 +40,28 @@ app.use('/api', lockController);
 /**
  * 404 handler.
  */
-app.all('*', (req, res) => {
+app.all('*', (req: Request, res: Response) => {
     res.status(404).json(new Error('Resource not found.'));
 });
 
 // Https credentials
-const credentials = {
-    pfx: fs.readFileSync('./localhost.pfx'),
-    passphrase: 'P@ssw0rd'
-};
+// const credentials = {
+//     pfx: fs.readFileSync('./localhost.pfx'),
+//     passphrase: 'P@ssw0rd'
+// };
 
-const server = https.createServer(credentials, app);
-server.listen(app.get('port'), () => {
-    console.log('App is running @ https://localhost:%d',
+// const server = https.createServer(credentials, app);
+// server.listen(app.get('port'), () => {
+//     console.log('App is running @ https://localhost:%d',
+//         app.get('port'),
+//         app.get('env'));
+// });
+
+app.listen(app.get('port'), () => {
+    console.log('App is running @ http://localhost:%d',
         app.get('port'),
         app.get('env'));
 });
 
-export default server;
+// export default server;
+export default app;
