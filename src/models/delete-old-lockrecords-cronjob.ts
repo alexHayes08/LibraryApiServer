@@ -6,13 +6,6 @@ import { LockService } from '../services/lock-service';
 import { Paginate } from './paginate';
 import { LockRecord } from './lock';
 
-<<<<<<< HEAD
-=======
-function deleteOldRecord() {
-
-}
-
->>>>>>> 8f5b85d1be355e6a118f99f4845690c18e406b49
 export const deleteOldLockRecordsCronJob: CronJobData = {
     id: 'fed584f6-9d30-4dc8-9983-73cf4c965749',
     name: 'Delete Old Lock Records',
