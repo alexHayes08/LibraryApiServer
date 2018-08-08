@@ -3,12 +3,11 @@ import { Container } from 'inversify';
 import { CronJobData } from './cronjob';
 import { TYPES } from '../dependency-registrar';
 import { LockService } from '../services/lock-service';
-import { PaginationResults, Paginate } from './paginate';
+import { Paginate } from './paginate';
 import { LockRecord } from './lock';
-import { resolve } from 'url';
 
-function executePromisesSequentially<T>(promises: Array<Promise<T>>): Promise<T> {
-    return promises.reduce((p, f) => p.then(f), Promise.resolve());
+function deleteOldRecord() {
+
 }
 
 export const deleteOldLockRecordsCronJob: CronJobData = {
@@ -28,11 +27,6 @@ export const deleteOldLockRecordsCronJob: CronJobData = {
                 });
                 nextResults = results.next;
             } while (nextResults !== undefined);
-
-            const iterator = generator();
-            for await (const oldLocks of iterator) {
-                console.log(oldLocks);
-            }
 
             resolve(true);
         });
