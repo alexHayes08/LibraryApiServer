@@ -62,7 +62,7 @@ paths:
       operationId: "lockablecreatemany"
       parameters:
         - in: body
-          name: "lockables"
+          name: "An array of lockables."
           schema:
             type: "array"
             items:
