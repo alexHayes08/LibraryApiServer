@@ -43,7 +43,6 @@ paths:
       operationId: "lockablecreate"
       parameters:
         - in: body
-          name: "lockable"
           description: "The lockable to create."
           schema:
             $ref: "#/definitions/genericLockable"
@@ -62,7 +61,6 @@ paths:
       operationId: "lockablecreatemany"
       parameters:
         - in: body
-          name: "An array of lockables."
           schema:
             type: "array"
             items:
@@ -82,7 +80,6 @@ paths:
       operationId: "lockableretrieve"
       parameters:
         - in: body
-          name: "Retrieval information."
           schema:
             $ref: "#/definitions/retrieveRequest"
       responses:
@@ -102,7 +99,6 @@ paths:
       operationId: "lockableupdate"
       parameters:
         - in: body
-          name: "Lockable"
           schema:
             $ref: "#/definitions/lockable"
       responses:
@@ -118,7 +114,6 @@ paths:
       operationId: "lockabledelete"
       parameters:
         - in: body
-          name: "Retrieval information."
           schema:
             $ref: "#/definitions/retrieveRequest"
       responses:
@@ -132,7 +127,6 @@ paths:
       operationId: "lockablepaginate"
       parameters:
         - in: body
-          name: "PaginateDate"
           schema:
             $ref: "#/definitions/paginate"
       responses:
@@ -148,7 +142,6 @@ paths:
       operationId: "lockablelock"
       parameters:
         - in: body
-          name: "Lock and lockable data."
           schema:
             $ref: "#/definitions/lockLockable"
       responses:
@@ -164,7 +157,6 @@ paths:
       operationId: "lockableunlock"
       parameters:
         - in: body
-          name: "Lock and lockable data."
           schema:
             type: "object"
             properties:
@@ -201,7 +193,6 @@ paths:
       operationId: "lockpaginate"
       parameters:
         - in: body
-          name: "Lock pagination data."
           schema:
             $ref: "#/definitions/paginate"
       responses:
