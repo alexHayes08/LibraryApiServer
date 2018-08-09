@@ -41,7 +41,7 @@ lockablesController.post('/lockable/create', (req: Request, res: Response) => {
 });
 
 lockablesController.post('/lockable/create-many', (req: Request, res: Response) => {
-    const lockableData: GenericLockableData = req.body;
+    const lockableData: GenericLockableData = req.body.lockables;
 
     // Validate request body.
     if (!Array.isArray(lockableData)) {

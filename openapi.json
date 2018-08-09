@@ -1,5 +1,5 @@
 {
-    "swagger": 2.0,
+    "swagger": "2.0",
     "info": {
         "description": "A simple library api for retrieving/locking/unlocking resources.",
         "title": "Lockables API",
@@ -92,12 +92,11 @@
                 "parameters": [
                     {
                         "in": "body",
-                        "name": "arrayOfLockables",
+                        "name": "array_of_lockables",
+                        "description": "Array of generic lockables to create.",
+                        "required": true,
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/genericLockable"
-                            }
+                            "$ref": "#/definitions/createManyObject"
                         }
                     }
                 ],
@@ -355,6 +354,17 @@
         }
     },
     "definitions": {
+        "createManyArray": {
+            "type": "object",
+            "properties": {
+                "lockables": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/genericLockable"
+                    }
+                }
+            }
+        },
         "lockPaginationResults": {
             "type": "object",
             "required": [
