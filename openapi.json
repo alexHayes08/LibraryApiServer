@@ -30,12 +30,7 @@
                             "$ref": "#/definitions/versionResponse"
                         }
                     }
-                },
-                "security": [
-                    {
-                        "google_jwt": []
-                    }
-                ]
+                }
             }
         },
         "/api/running": {
@@ -46,12 +41,7 @@
                     "200": {
                         "description": "Server is running."
                     }
-                },
-                "security": [
-                    {
-                        "google_jwt": []
-                    }
-                ]
+                }
             }
         },
         "/api/lockable/create": {
