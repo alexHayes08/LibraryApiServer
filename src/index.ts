@@ -11,6 +11,8 @@ import https from 'https';
 import './config/mongoose.config';
 import { lockablesController } from './controllers/lockables-controller';
 import { lockController } from './controllers/lock-controller';
+import { MessageError } from './models/errors';
+import { errorToObj } from './helpers/response-helpers';
 
 const app = express();
 app.set('trust proxy', true);
@@ -53,7 +55,7 @@ app.use('/api', lockController);
  * 404 handler.
  */
 app.all('*', (req: Request, res: Response) => {
-    res.status(404).json(new Error('Resource not found.'));
+    res.status(404).json(errorToObj(new MessageError('Resource not found.')));
 });
 
 // Https credentials

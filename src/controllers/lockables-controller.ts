@@ -12,6 +12,7 @@ import { LockableData,
 } from '../models/lockable';
 import { GenericLockData, isGenericLockData } from '../models/lock';
 import { isPaginate } from '../models/paginate';
+import { errorToObj } from '../helpers/response-helpers';
 
 const lockableService: LockableService =
     container.get<LockableService>(TYPES.LockableService);
@@ -32,13 +33,14 @@ lockablesController.post('/lockable/create', (req: Request, res: Response) => {
     } else if (isGenericLockableData(data)) {
         _lockable = data;
     } else {
-        res.status(400).json(new MessageError('Invalid request body.'));
+        res.status(400).json(errorToObj(
+            new MessageError('Invalid request body.')));
         return;
     }
 
     lockableService.create(_lockable)
         .then(lockable => res.json(lockable))
-        .catch(e => res.status(500).json(e));
+        .catch(e => res.status(500).json(errorToObj(e)));
 });
 
 /**
@@ -49,20 +51,20 @@ lockablesController.post('/lockable/create-many', (req: Request, res: Response) 
 
     // Validate request body.
     if (!Array.isArray(lockableData)) {
-        res.status(400).json(new MessageError('Invalid request body.'));
+        res.status(400).json(errorToObj(new MessageError('Invalid request body.')));
         return;
     }
 
     for (const lockable of lockableData) {
         if (!isGenericLockableData(lockable)) {
-            res.status(400).json(new MessageError('Invalid request body.'));
+            res.status(400).json(errorToObj(new MessageError('Invalid request body.')));
             return;
         }
     }
 
     lockableService.createMany(lockableData)
         .then(lockables => res.json(lockables))
-        .catch(error => res.status(500).json(error));
+        .catch(error => res.status(500).json(errorToObj(error)));
 });
 
 /**
@@ -75,31 +77,31 @@ lockablesController.post('/lockable/retrieve', (req: Request, res: Response) => 
         const value: string = req.body.value;
 
         if (typeof value !== 'string') {
-            res.status(400).json(new Error('The request body had an invalid'
-                + ' field: value. Expected the type of the field to be a'
-                + ' string.'));
+            res.status(400).json(errorToObj(new Error('The request body had an'
+                + ' invalid field: value. Expected the type of the field to be'
+                + ' a string.')));
             return;
         }
 
         lockableService.retrieve(method, value)
             .then(lockable => res.json(lockable))
-            .catch(e => res.status(500).json(e));
+            .catch(e => res.status(500).json(errorToObj(e)));
     } else if (method === 'categories') {
         const categories = req.body.value;
 
         // Verify categories is an array.
         if (!Array.isArray(categories)) {
-            res.status(400).json(new Error('The request body had an invalid'
-                + ' field: value. When the method is categories the value must'
-                + ' be an array.'));
+            res.status(400).json(errorToObj(new Error('The request body had an'
+                + '  invalid field: value. When the method is categories the'
+                + ' value must be an array.')));
             return;
         }
 
         lockableService.retrieveLatestInCategory(categories)
             .then(lockable => res.json(lockable))
-            .catch(error => res.status(500).json(error));
+            .catch(error => res.status(500).json(errorToObj(error)));
     } else {
-        res.status(400).json(new Error(`Method (${method}) isn't supported.`));
+        res.status(400).json(errorToObj(new MessageError(`Method (${method}) isn't supported.`)));
         return;
     }
 });
@@ -114,10 +116,10 @@ lockablesController.put('/lockable/update', (req: Request, res: Response) => {
         const lockable = new Lockable(data);
         lockableService.update(lockable)
             .then(_lockable => res.json(_lockable))
-            .catch(e => res.status(500).json(e));
+            .catch(e => res.status(500).json(errorToObj(e)));
     } else {
         res.status(400)
-            .json(new Error('Request body wasn\'t in correct format.'));
+            .json(errorToObj(new MessageError('Request body wasn\'t in correct format.')));
         return;
     }
 });
@@ -136,7 +138,7 @@ lockablesController.put('/lockables/update-many', (req: Request, res: Response) 
 
     for (const lockable of lockableData) {
         if (!isLockableData(lockable)) {
-            res.status(400).json(new MessageError('Invalid request body.'));
+            res.status(400).json(errorToObj(new MessageError('Invalid request body.')));
         }
     }
 
@@ -144,7 +146,7 @@ lockablesController.put('/lockables/update-many', (req: Request, res: Response) 
             .map(lockable => new Lockable(lockable)))
         .then(paginationResults => res.json(paginationResults))
         .catch(error => {
-            res.status(500).json(new InternalError(error));
+            res.status(500).json(errorToObj(new InternalError(error)));
         });
 });
 
@@ -156,24 +158,25 @@ lockablesController.post('/lockable/delete', (req: Request, res: Response) => {
     const value: string = req.body.method;
 
     if (typeof method !== 'string') {
-        res.status(400).json(new Error('The request body had an invalid'
-                + ' field: method. Expected the type of the field to be a'
-                + ' string.'));
+        res.status(400).json(errorToObj(new Error('The request body had an'
+                + ' invalid field: method. Expected the type of the field to'
+                + ' be a string.')));
             return;
     } else if (typeof value !== 'string') {
-        res.status(400).json(new Error('The request body had an invalid'
-                + ' field: value. Expected the type of the field to be a'
-                + ' string.'));
+        res.status(400).json(errorToObj(new Error('The request body had an'
+                + ' invalid field: value. Expected the type of the field to'
+                + ' be a string.')));
             return;
     }
 
     if (method === 'id' || method === 'name') {
         lockableService.delete(method, value)
             .then(success => res.json(success))
-            .catch(e => res.status(500).json(e));
+            .catch(e => res.status(500).json(errorToObj(e)));
     } else {
         res.status(400)
-            .json(new Error('Method can be either \'id\' or \'name\'.'));
+            .json(errorToObj(
+                new MessageError('Method can be either \'id\' or \'name\'.')));
             return;
     }
 });
@@ -185,8 +188,6 @@ lockablesController.post('/lockables/delete-many', (req: Request, res: Response)
     const values = req.body.values;
     const field = req.body.field;
 
-    // TODO: Add custom validation error messages.
-    // Validate request body.
     if (!Array.isArray(values)) {
         res.status(400).json(new MessageError('Invalid request body.'));
         return;
@@ -201,7 +202,7 @@ lockablesController.post('/lockables/delete-many', (req: Request, res: Response)
     lockableService.deleteMany(field, values)
         .then(deletedAll => res.json(deletedAll))
         .catch((error: Error) => {
-            res.status(500).json(new InternalError(error.message));
+            res.status(500).json(errorToObj(new InternalError(error.message)));
             return;
         });
 });
@@ -211,13 +212,13 @@ lockablesController.post('/lockables/delete-many', (req: Request, res: Response)
  */
 lockablesController.post('/lockable/paginate', (req: Request, res: Response) => {
     if (!isPaginate<Lockable>(req.body)) {
-        res.status(400).json(new Error('Invalid request body.'));
+        res.status(400).json(errorToObj(new Error('Invalid request body.')));
         return;
     }
 
     lockableService.paginate(req.body)
         .then(results => res.json(results))
-        .catch(error => res.status(500).json(error));
+        .catch(error => res.status(500).json(errorToObj(error)));
 });
 
 /**
@@ -229,19 +230,20 @@ lockablesController.post('/lockable/lock/', (req: Request, res: Response) => {
 
     if (!isGenericLockData(lock)) {
         res.status(400)
-            .json(new MessageError('Request body in invalid format.'));
+            .json(errorToObj(
+                new MessageError('Request body in invalid format.')));
         return;
     } else if (typeof lockableId !== 'string') {
         res.status(400)
-            .json(new Error('Request body had an invalid field.'
-                + ' Expected \'lockableId\' to be a string.'));
+            .json(errorToObj(new Error('Request body had an invalid field.'
+                + ' Expected \'lockableId\' to be a string.')));
         return;
     }
 
     lockableService.retrieve('id', lockableId)
         .then(lockable => lockableService.lock(lockable, lock))
         .then(result => res.json(result))
-        .catch(e => res.status(500).json(e));
+        .catch(e => res.status(500).json(errorToObj(e)));
 });
 
 /**
@@ -253,16 +255,16 @@ lockablesController.post('/lockable/unlock', (req: Request, res: Response) => {
 
     if (typeof lockId !== 'string') {
         res.status(400)
-            .json(new Error('Invalid request body. Expected the field'
-                + ' \'lockId\' to be a string.'));
+            .json(errorToObj(new MessageError('Invalid request body. Expected'
+                + ' the field \'lockId\' to be a string.')));
     } else if (typeof lockableId !== 'string') {
         res.status(400)
-            .json(new Error('Invalid request body. Expected the field'
-                + ' \'lockableId\' to be a string.'));
+            .json(errorToObj(new Error('Invalid request body. Expected the'
+                + ' field \'lockableId\' to be a string.')));
     }
 
     lockableService.retrieve('id', lockableId)
         .then(lockable => lockableService.unlock(lockable, lockId))
         .then(lockable => res.json(lockable))
-        .catch(error => res.status(500).json(error));
+        .catch(error => res.status(500).json(errorToObj(error)));
 });

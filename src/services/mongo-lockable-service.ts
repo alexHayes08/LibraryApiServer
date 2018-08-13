@@ -1,11 +1,11 @@
 import { injectable, inject } from 'inversify';
-import { Document, Types } from 'mongoose';
+import { Document } from 'mongoose';
 
 import { LockableService } from './lockable-service';
 import { LockableModel, LockModel } from '../config/mongoose.config';
 import { Lockable, GenericLockableData } from '../models/lockable';
 import { AlreadyLockedError } from '../models/errors';
-import { GenericLockData, LockRecord, GenericLockRecordData, Lock } from '../models/lock';
+import { GenericLockData, GenericLockRecordData } from '../models/lock';
 import { MongoCrudPlusPattern } from './mongo-crud-plus-pattern';
 import { TYPES } from '../dependency-registrar';
 import { LockService } from './lock-service';
@@ -39,43 +39,6 @@ export class MongoLockableService
     //#endregion
 
     //#region Functions
-
-    public createMany(lockables: GenericLockableData[]): Promise<Lockable[]> {
-
-        // Return an empty array if the arguments length is zero.
-        if (lockables.length === 0) {
-            return Promise.resolve([]);
-        }
-
-        const self = this;
-        return new Promise(function(resolve, reject) {
-            LockableModel.collection.insertMany(lockables)
-                .then(async result => {
-                    const ids: Types.ObjectId[] = [];
-
-                    for (const idKey in result.insertedIds) {
-                        ids.push(result.insertedIds[idKey]);
-                    }
-
-                    const docs = await LockableModel.find({
-                        '_id': {
-                            $in: ids
-                        }
-                    });
-
-                    for (const doc of docs) {
-                        doc.toObject();
-                    }
-
-                    const _lockables = docs.map(doc => doc.toObject({
-                        virtuals: true,
-                        getters: true
-                    }));
-                    resolve(_lockables);
-                })
-                .catch(error => reject(error));
-        });
-    }
 
     public lock(lockable: Lockable, lock: GenericLockData): Promise<Lockable> {
         const self = this;

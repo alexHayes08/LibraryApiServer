@@ -12,16 +12,13 @@ export class MongoCrudPlusPattern<T extends Entity, U> implements CrudPlusPatter
 
     private readonly documentToModel: (doc: Document) => T;
     private readonly model: Model<Document>;
-    private readonly collection: Collection;
 
     //#endregion
 
     //#region Constructor
 
     public constructor(@unmanaged() model: Model<Document>,
-            @unmanaged() documentToModel: (doc: Document) => T,
-            @unmanaged() collection: Collection) {
-        this.collection = collection;
+            @unmanaged() documentToModel: (doc: Document) => T) {
         this.documentToModel = documentToModel;
         this.model = model;
     }
@@ -50,7 +47,7 @@ export class MongoCrudPlusPattern<T extends Entity, U> implements CrudPlusPatter
                 return new self.model(d);
             });
 
-            self.collection.insertMany(models)
+            self.model.collection.insertMany(models)
                 .then(result => {
                     const ids: string[] = [];
 
