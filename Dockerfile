@@ -13,10 +13,11 @@ COPY tsconfig.json ./
 # RUN npm install --only=production
 RUN npm install -g tsc typescript
 RUN npm install
-RUN npm run build-docker
 
 # Bundle app source
 COPY . .
+
+RUN npm run build-docker
 
 EXPOSE 8080
 CMD [ "npm", "start" ]
