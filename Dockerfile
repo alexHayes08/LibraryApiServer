@@ -2,12 +2,12 @@ FROM node:8
 
 # Create app directory
 WORKDIR .
-RUN ls
 
 # Install app dependencies
 # A wildcard is used to ensure both package.json and package-lock.json are
 # copied where available (npm@5+)
 COPY package*.json ./
+COPY tsconfig.json ./
 
 # If you are building your code for production
 # RUN npm install --only=production
