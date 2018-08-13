@@ -9,7 +9,7 @@ import { Entity } from '../models/entity';
  * current iteration (zero-based).
  * @param crudService
  */
-export async function createItems<T, U>(n: number,
+export async function createItems<T extends Entity, U>(n: number,
         itemGenerator: (i: number) => U,
         crudService: CrudPlusPattern<T, U>) {
     const items: T[] = [];

@@ -150,6 +150,34 @@
                 }
             }
         },
+        "/api/lockable/update-many": {
+            "put": {
+                "description": "Updates a lockable.",
+                "operationId": "lockableupdatemany",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "lockable",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "lockables": {
+                                    "$ref": "#/definitions/lockable"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully updated the lockables.",
+                        "schema": {
+                            "$ref": "#/definitions/lockablePaginationResults"
+                        }
+                    }
+                }
+            }
+        },
         "/api/lockable/delete": {
             "post": {
                 "description": "Delete a lockable.",
@@ -166,6 +194,37 @@
                 "responses": {
                     "200": {
                         "description": "Successfully deleted the lockable."
+                    }
+                }
+            }
+        },
+        "/api/lockable/delete-many": {
+            "post": {
+                "description": "Delete a lockable.",
+                "operationId": "lockabledeletemany",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "retrievalInformation",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "field": {
+                                    "type": "string"
+                                },
+                                "values": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/retrieveRequest"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully deleted the lockables."
                     }
                 }
             }

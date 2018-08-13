@@ -1,8 +1,8 @@
-import { Document, Model, Types } from 'mongoose';
+import { Document, Model, Types, Collection } from 'mongoose';
 
 import { CrudPlusPattern } from './crud-plus-pattern';
 import { Entity } from '../models/entity';
-import { PaginationResults, Paginate } from '../models/paginate';
+import { PaginationResults, Paginate, Filter } from '../models/paginate';
 import { NotImplementedError } from '../models/errors';
 import { injectable, unmanaged } from '../../node_modules/inversify';
 
@@ -12,13 +12,16 @@ export class MongoCrudPlusPattern<T extends Entity, U> implements CrudPlusPatter
 
     private readonly documentToModel: (doc: Document) => T;
     private readonly model: Model<Document>;
+    private readonly collection: Collection;
 
     //#endregion
 
     //#region Constructor
 
     public constructor(@unmanaged() model: Model<Document>,
-            @unmanaged() documentToModel: (doc: Document) => T) {
+            @unmanaged() documentToModel: (doc: Document) => T,
+            @unmanaged() collection: Collection) {
+        this.collection = collection;
         this.documentToModel = documentToModel;
         this.model = model;
     }
@@ -35,6 +38,37 @@ export class MongoCrudPlusPattern<T extends Entity, U> implements CrudPlusPatter
                 .then(doc => {
                     const asObj = self.documentToModel(doc);
                     resolve(asObj);
+                })
+                .catch(error => reject(error));
+        });
+    }
+
+    public createMany(data: U[]): Promise<PaginationResults<T>> {
+        const self = this;
+        return new Promise(function(resolve, reject) {
+            const models = data.map(d => {
+                return new self.model(d);
+            });
+
+            self.collection.insertMany(models)
+                .then(result => {
+                    const ids: string[] = [];
+
+                    for (let i = 0; i < result.insertedCount; i++) {
+                        const id = result.insertedIds[i].toHexString();
+                        ids.push(id);
+                    }
+
+                    self.paginate({
+                            limit: models.length,
+                            filters: ids.map(id => <Filter<T>>{
+                                field: 'id',
+                                comparator: '==',
+                                value: id
+                            })
+                        })
+                    .then(paginationResults => resolve(paginationResults))
+                    .catch(error => reject(error));
                 })
                 .catch(error => reject(error));
         });
@@ -86,6 +120,36 @@ export class MongoCrudPlusPattern<T extends Entity, U> implements CrudPlusPatter
         });
     }
 
+    public updateMany(data: T[]): Promise<PaginationResults<T>> {
+        const self = this;
+        return new Promise(function(resolve, reject) {
+            const promises: Promise<undefined>[] = [];
+
+            for (const item of data) {
+                promises.push(new Promise((resolve, reject) => {
+                    self.update(item)
+                        .then(() => resolve(undefined))
+                        .catch(error => reject(error));
+                }));
+            }
+
+            Promise.all(promises)
+                .then(() => {
+                    self.paginate({
+                            limit: data.length,
+                            filters: data.map(d => <Filter<T>>{
+                                field: 'id',
+                                comparator: '==',
+                                value: d.id
+                            })
+                        })
+                        .then(paginationResults => resolve(paginationResults))
+                        .catch(error => reject(error));
+                })
+                .catch(error => reject(error));
+        });
+    }
+
     public delete<V extends keyof T>(fieldName: V, value: T[V]): Promise<boolean> {
         const self = this;
         return new Promise(function(resolve, reject) {
@@ -97,6 +161,24 @@ export class MongoCrudPlusPattern<T extends Entity, U> implements CrudPlusPatter
             }
             self.model.deleteOne(findData)
                 .then(res => resolve(res.n > 0))
+                .catch(error => reject(error));
+        });
+    }
+
+    public deleteMany<V extends keyof T>(fieldName: V, values: T[V][]): Promise<boolean> {
+        const self = this;
+        return new Promise(function(resolve, reject) {
+            const promises: Promise<undefined>[] = [];
+            for (const value of values) {
+                promises.push(new Promise((resolve, reject) => {
+                    self.delete(fieldName, value)
+                        .then(() => resolve())
+                        .catch(error => reject(error));
+                }));
+            }
+
+            Promise.all(promises)
+                .then(() => resolve(true))
                 .catch(error => reject(error));
         });
     }

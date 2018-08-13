@@ -11,7 +11,6 @@ import https from 'https';
 import './config/mongoose.config';
 import { lockablesController } from './controllers/lockables-controller';
 import { lockController } from './controllers/lock-controller';
-import { runInNewContext } from 'vm';
 
 const app = express();
 app.set('trust proxy', true);
@@ -39,7 +38,7 @@ app.all('*', (req: Request, res: Response, next) => {
 
 app.get('/api/version', (req: Request, res: Response) => {
     res.json({
-        version: '2018-6-18'
+        version: '1.0'
     });
 });
 

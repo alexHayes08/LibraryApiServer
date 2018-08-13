@@ -2,12 +2,13 @@ import express, { Request, Response } from 'express';
 
 import { container, TYPES } from '../dependency-registrar';
 import { LockableService } from '../services/lockable-service';
-import { MessageError } from '../models/errors';
+import { MessageError, InternalError } from '../models/errors';
 import { LockableData,
     Lockable,
     isLockableData,
     GenericLockableData,
-    isGenericLockableData
+    isGenericLockableData,
+    isKeyOfLockableData
 } from '../models/lockable';
 import { GenericLockData, isGenericLockData } from '../models/lock';
 import { isPaginate } from '../models/paginate';
@@ -40,6 +41,9 @@ lockablesController.post('/lockable/create', (req: Request, res: Response) => {
         .catch(e => res.status(500).json(e));
 });
 
+/**
+ * Creates multiple lockables.
+ */
 lockablesController.post('/lockable/create-many', (req: Request, res: Response) => {
     const lockableData: GenericLockableData = req.body.lockables;
 
@@ -61,6 +65,9 @@ lockablesController.post('/lockable/create-many', (req: Request, res: Response) 
         .catch(error => res.status(500).json(error));
 });
 
+/**
+ * Retrieves a lockable.
+ */
 lockablesController.post('/lockable/retrieve', (req: Request, res: Response) => {
     const method: string = req.body.method;
 
@@ -97,6 +104,9 @@ lockablesController.post('/lockable/retrieve', (req: Request, res: Response) => 
     }
 });
 
+/**
+ * Updates a lockable.
+ */
 lockablesController.put('/lockable/update', (req: Request, res: Response) => {
     const data = req.body;
 
@@ -112,6 +122,35 @@ lockablesController.put('/lockable/update', (req: Request, res: Response) => {
     }
 });
 
+/**
+ * Updates multiple lockables.
+ */
+lockablesController.put('/lockables/update-many', (req: Request, res: Response) => {
+    const lockableData: LockableData[] = req.body.lockables;
+
+    // Validate request body.
+    if (!Array.isArray(lockableData)) {
+        res.status(400).json(new MessageError('Invalid request body.'));
+        return;
+    }
+
+    for (const lockable of lockableData) {
+        if (!isLockableData(lockable)) {
+            res.status(400).json(new MessageError('Invalid request body.'));
+        }
+    }
+
+    lockableService.updateMany(lockableData
+            .map(lockable => new Lockable(lockable)))
+        .then(paginationResults => res.json(paginationResults))
+        .catch(error => {
+            res.status(500).json(new InternalError(error));
+        });
+});
+
+/**
+ * Deletes a lockable.
+ */
 lockablesController.post('/lockable/delete', (req: Request, res: Response) => {
     const method: string = req.body.field;
     const value: string = req.body.method;
@@ -137,6 +176,34 @@ lockablesController.post('/lockable/delete', (req: Request, res: Response) => {
             .json(new Error('Method can be either \'id\' or \'name\'.'));
             return;
     }
+});
+
+/**
+ * Deletes multiple lockables.
+ */
+lockablesController.post('/lockables/delete-many', (req: Request, res: Response) => {
+    const values = req.body.values;
+    const field = req.body.field;
+
+    // TODO: Add custom validation error messages.
+    // Validate request body.
+    if (!Array.isArray(values)) {
+        res.status(400).json(new MessageError('Invalid request body.'));
+        return;
+    } else if (typeof field !== 'string') {
+        res.status(400).json(new MessageError('Invalid request body.'));
+        return;
+    } else if (!isKeyOfLockableData(field)) {
+        res.status(400).json(new MessageError('Invalid request body.'));
+        return;
+    }
+
+    lockableService.deleteMany(field, values)
+        .then(deletedAll => res.json(deletedAll))
+        .catch((error: Error) => {
+            res.status(500).json(new InternalError(error.message));
+            return;
+        });
 });
 
 /**

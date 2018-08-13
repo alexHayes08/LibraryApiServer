@@ -24,6 +24,15 @@ export interface PaginationResults<T> {
     previous?: Paginate<T>;
 }
 
+export function isComparator(value: any): value is WhereFilterOp {
+    return value !== undefined
+        && (value == '>'
+            || value == '>='
+            || value == '=='
+            || value == '<='
+            || value == '<');
+}
+
 export function isOrderBy(value: any): value is OrderBy {
     return value !== undefined
         && value.fieldPath !== undefined;

@@ -17,13 +17,15 @@ export class InvalidCastError extends MessageError {
     }
 }
 
-export class InternalError extends Error {
-    constructor() {
-        super('An internal error occurred.');
+export class InternalError extends MessageError {
+    constructor(error?: string) {
+        super(error !== undefined
+            ? error.toString()
+            : 'An internal error occurred.');
     }
 }
 
-export class AlreadyLockedError extends Error {
+export class AlreadyLockedError extends MessageError {
     constructor() {
         super('Lockable was already locked.');
     }

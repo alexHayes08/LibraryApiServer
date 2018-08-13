@@ -45,8 +45,9 @@ export class Lockable {
     //#region Functions
 
     public getActiveLocks(): Lock[] {
+        const now = new Date();
         return this.locks.filter(lock => lock.unlockedAt !== undefined
-            || lock.unlockedAt < new Date());
+            || lock.unlockedAt < now);
     }
 
     public isLocked(): boolean {
@@ -81,6 +82,19 @@ export function isLockableData(value: any): value is LockableData {
         && value.locks !== undefined
         && value.createdOn !== undefined
         && value.categories !== undefined;
+}
+
+export function isKeyOfLockableData<T extends keyof Lockable>(value: any): value is T {
+    const tempLockable = new Lockable({
+        id: '',
+        locks: [],
+        name: '',
+        createdOn: new Date(),
+        categories: [],
+        data: []
+    });
+    return value !== undefined
+        && value in tempLockable;
 }
 
 export function isLockable(value: any): value is Lockable {
