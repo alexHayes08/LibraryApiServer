@@ -8,6 +8,7 @@
     "debug": "npm run build && npm run watch-debug",
     "build": "npm run build-ts && npm run tslint && npm run copy-static-assets",
     "build-ts": "tsc",
+    "build-docker": "tsc -p /usr/src/LibraryApiServer",
     "copy-static-assets": "ts-node copyStaticAssets.ts",
     "test": "jest --forceExit --coverage --verbose --detectOpenHandles",
     "tslint": "tslint -c tslint.json -p tsconfig.json",

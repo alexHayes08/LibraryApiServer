@@ -8,12 +8,11 @@ WORKDIR /usr/src/LibraryApiServer
 # copied where available (npm@5+)
 COPY package*.json ./
 
-RUN npm install -g tsc
-RUN npm install
-RUN npm build-ts
-
 # If you are building your code for production
 # RUN npm install --only=production
+RUN npm install -g tsc typescript
+RUN npm install
+RUN npm build-docker
 
 # Bundle app source
 COPY . .
