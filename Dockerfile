@@ -2,6 +2,7 @@ FROM node:8
 
 # Create app directory
 WORKDIR .
+RUN ls
 
 # Install app dependencies
 # A wildcard is used to ensure both package.json and package-lock.json are
