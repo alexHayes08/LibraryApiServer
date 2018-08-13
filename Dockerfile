@@ -12,7 +12,7 @@ COPY package*.json ./
 # RUN npm install --only=production
 RUN npm install -g tsc typescript
 RUN npm install
-RUN npm build-docker
+RUN npm run build-docker
 
 # Bundle app source
 COPY . .
