@@ -72,6 +72,7 @@ app.all('*', (req: Request, res: Response) => {
 // });
 
 app.listen(app.get('port'), () => {
+    console.log(`App started @${new Date().toString()}`);
     console.log('App is running @ http://localhost:%d',
         app.get('port'),
         app.get('env'));

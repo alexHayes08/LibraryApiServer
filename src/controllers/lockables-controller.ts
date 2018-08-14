@@ -69,6 +69,7 @@ lockablesController.post('/lockable/create-many', (req: Request, res: Response) 
 
 /**
  * Retrieves a lockable.
+ * TODO: Rename 'method' to 'field' and update openapi.json.
  */
 lockablesController.post('/lockable/retrieve', (req: Request, res: Response) => {
     const method: string = req.body.method;

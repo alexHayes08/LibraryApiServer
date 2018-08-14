@@ -47,7 +47,7 @@
         "/api/lockable/create": {
             "post": {
                 "description": "Creates a Lockable.",
-                "operationId": "lockablecreate",
+                "operationId": "lockableCreate",
                 "parameters": [
                     {
                         "in": "body",
@@ -73,7 +73,7 @@
         "/api/lockable/create-many": {
             "post": {
                 "description": "Batch version of create.",
-                "operationId": "lockablecreatemany",
+                "operationId": "lockableCreateMany",
                 "parameters": [
                     {
                         "in": "body",
@@ -101,7 +101,7 @@
         "/api/lockable/retrieve": {
             "post": {
                 "description": "Retrieves a lockable.",
-                "operationId": "lockableretrieve",
+                "operationId": "lockableRetrieve",
                 "parameters": [
                     {
                         "in": "body",
@@ -130,7 +130,7 @@
         "/api/lockable/update": {
             "put": {
                 "description": "Updates a lockable.",
-                "operationId": "lockableupdate",
+                "operationId": "lockableUpdate",
                 "parameters": [
                     {
                         "in": "body",
@@ -153,7 +153,7 @@
         "/api/lockable/update-many": {
             "put": {
                 "description": "Updates a lockable.",
-                "operationId": "lockableupdatemany",
+                "operationId": "lockableUpdateMany",
                 "parameters": [
                     {
                         "in": "body",
@@ -162,7 +162,10 @@
                             "type": "object",
                             "properties": {
                                 "lockables": {
-                                    "$ref": "#/definitions/lockable"
+                                    "type": "array",
+                                    "items": {
+                                      "$ref": "#/definitions/lockable"
+                                    }
                                 }
                             }
                         }
@@ -181,7 +184,7 @@
         "/api/lockable/delete": {
             "post": {
                 "description": "Delete a lockable.",
-                "operationId": "lockabledelete",
+                "operationId": "lockableDelete",
                 "parameters": [
                     {
                         "in": "body",
@@ -201,7 +204,7 @@
         "/api/lockable/delete-many": {
             "post": {
                 "description": "Delete a lockable.",
-                "operationId": "lockabledeletemany",
+                "operationId": "lockableDeleteMany",
                 "parameters": [
                     {
                         "in": "body",
@@ -232,7 +235,7 @@
         "/api/lockable/paginate": {
             "post": {
                 "description": "Paginate over lockables.",
-                "operationId": "lockablepaginate",
+                "operationId": "lockablePaginate",
                 "parameters": [
                     {
                         "in": "body",
@@ -255,7 +258,7 @@
         "/api/lockable/lock": {
             "post": {
                 "description": "Applies a lock to a lockable.",
-                "operationId": "lockablelock",
+                "operationId": "lockableLock",
                 "parameters": [
                     {
                         "in": "body",
@@ -278,7 +281,7 @@
         "/api/lockable/unlock": {
             "post": {
                 "description": "Remove a lock from the lockable.",
-                "operationId": "lockableunlock",
+                "operationId": "lockableUnlock",
                 "parameters": [
                     {
                         "in": "body",
@@ -309,7 +312,7 @@
         "/api/inactive-lock/{id}": {
             "get": {
                 "description": "Retrieves a lock by id.",
-                "operationId": "lockgetinactivelockbyid",
+                "operationId": "lockGetIaactiveLockById",
                 "parameters": [
                     {
                         "in": "path",
@@ -331,7 +334,7 @@
         "/api/inactive-locks": {
             "post": {
                 "description": "Paginate over inactive locks.",
-                "operationId": "lockpaginate",
+                "operationId": "lockPaginate",
                 "parameters": [
                     {
                         "in": "body",
@@ -353,7 +356,7 @@
         }
     },
     "definitions": {
-        "createManyArray": {
+        "createManyObject": {
             "type": "object",
             "properties": {
                 "lockables": {
@@ -389,7 +392,7 @@
             ],
             "properties": {
                 "lock": {
-                    "$ref": "#/definitions/lock"
+                    "$ref": "#/definitions/genericLock"
                 },
                 "lockableId": {
                     "type": "string"
@@ -492,6 +495,29 @@
                 }
             }
         },
+        "genericLock": {
+            "type": "object",
+            "required": [
+                "lockedAt",
+                "maxLeaseDate",
+                "ownerToken",
+                "isShared"
+            ],
+            "properties": {
+                "lockedAt": {
+                    "type": "string"
+                },
+                "maxLeaseDate": {
+                    "type": "string"
+                },
+                "ownerToken": {
+                    "type": "string"
+                },
+                "isShared": {
+                  "type": "boolean"
+                }
+            }
+        },
         "genericLockable": {
             "type": "object",
             "properties": {
@@ -502,10 +528,10 @@
                     "type": "string"
                 },
                 "categories": {
-                        "type": "array"
-                },
-                "items": {
-                    "type": "string"
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
                 },
                 "data": {
                     "type": "object"
