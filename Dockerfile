@@ -14,7 +14,7 @@ COPY tsconfig.json ./
 
 # If you are building your code for production
 # RUN npm install --only=production
-RUN npm install -g tsc typescript
+RUN npm install -g typescript
 RUN npm install
 
 # Bundle app source

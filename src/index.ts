@@ -34,7 +34,7 @@ app.all('*', (req: Request, res: Response, next) => {
         authUser = Buffer.from(encodedInfo, 'base64').toJSON();
     }
 
-    req.user = authUser;
+    req['user'] = authUser;
     next();
 });
 
