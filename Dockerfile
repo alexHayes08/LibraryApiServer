@@ -3,6 +3,9 @@ FROM node:8
 # Create app directory
 WORKDIR .
 
+# Set environment variable to production
+ENV NODE_ENV="production"
+
 # Install app dependencies
 # A wildcard is used to ensure both package.json and package-lock.json are
 # copied where available (npm@5+)
