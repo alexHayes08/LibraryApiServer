@@ -1,10 +1,12 @@
 import mongoose from 'mongoose';
 
+import { Config } from './config';
+
 const Schema = mongoose.Schema;
 
 //#region Setup connection
 
-const url = 'mongodb://127.0.0.1:27017';
+const url = Config.databaseConnectionString;
 const dbName = 'libraryapi';
 mongoose.connect(`${url}/${dbName}`, { useNewUrlParser: true })
     .then(() => console.log('Successfully connected to mongodb.'))
