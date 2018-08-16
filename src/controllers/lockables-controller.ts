@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 
 import { container, TYPES } from '../dependency-registrar';
 import { LockableService } from '../services/lockable-service';
-import { MessageError, InternalError } from '../models/errors';
+import { MessageError, InternalError, NotImplementedError } from '../models/errors';
 import { LockableData,
     Lockable,
     isLockableData,
@@ -104,6 +104,28 @@ lockablesController.post('/lockable/retrieve', (req: Request, res: Response) => 
         res.status(400).json(errorToObj(new MessageError(`Method (${field}) isn't supported.`)));
         return;
     }
+});
+
+/**
+ * Retrieves the latest lockable that can have a readonly lock applied to it.
+ */
+lockablesController.post('/lockable/retrieve/readonly', (req: Request, res: Response) => {
+    const categories: string[] = req.body;
+
+    lockableService.retrieveLatestInCategory(categories, true, false)
+        .then(lockable => res.json(lockable))
+        .catch(error => res.status(500).json(errorToObj(error)));
+});
+
+/**
+ * Retrieves the latest lockable that can have a readwrite lock applied to it.
+ */
+lockablesController.post('/lockable/retrieve/readwrite', (req: Request, res: Response) => {
+    const categories: string[] = req.body;
+
+    lockableService.retrieveLatestInCategory(categories, false, false)
+        .then(lockable => res.json(lockable))
+        .catch(error => res.status(500).json(errorToObj(error)));
 });
 
 /**

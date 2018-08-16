@@ -127,6 +127,70 @@
                 }
             }
         },
+        "/api/lockable/retrieve/readonly": {
+            "post": {
+                "description": "Retrieves the latest lockable that can have a readonly lock applied to it.",
+                "operationId": "lockableRetrieveReadonly",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "retrievalInformation",
+                        "schema": {
+                            "$ref": "#/definitions/unlockedRetrievalRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved a lockable.",
+                        "schema": {
+                            "$ref": "#/definitions/lockable"
+                        }
+                    },
+                    "400": {
+                        "description": "Method in request body not supported."
+                    },
+                    "404": {
+                        "description": "Failed to locate any lockable matching the value."
+                    },
+                    "500": {
+                        "description": "Internal error occurred."
+                    }
+                }
+            }
+        },
+        "/api/lockable/retrieve/readwrite": {
+            "post": {
+                "description": "Retrieves the latest lockable that can have a readwrite lock applied to it.",
+                "operationId": "lockableRetrieveReadwrite",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "retrievalInformation",
+                        "schema": {
+                          "$ref": "#/definitions/unlockedRetrievalRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved a lockable.",
+                        "schema": {
+                            "$ref": "#/definitions/lockable"
+                        }
+                    },
+                    "400": {
+                        "description": "Method in request body not supported."
+                    },
+                    "404": {
+                        "description": "Failed to locate any lockable matching the value."
+                    },
+                    "500": {
+                        "description": "Internal error occurred."
+                    }
+                }
+            }
+        },
         "/api/lockable/update": {
             "put": {
                 "description": "Updates a lockable.",
@@ -356,6 +420,20 @@
         }
     },
     "definitions": {
+        "unlockedRetrievalRequest": {
+          "type": "object",
+          "required": [
+            "categories"
+          ],
+          "properties": {
+            "categories": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
         "createManyObject": {
             "type": "object",
             "properties": {
