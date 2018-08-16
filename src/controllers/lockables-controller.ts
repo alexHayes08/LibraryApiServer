@@ -110,7 +110,7 @@ lockablesController.post('/lockable/retrieve', (req: Request, res: Response) => 
  * Retrieves the latest lockable that can have a readonly lock applied to it.
  */
 lockablesController.post('/lockable/retrieve/readonly', (req: Request, res: Response) => {
-    const categories: string[] = req.body;
+    const categories: string[] = req.body.categories;
 
     lockableService.retrieveLatestInCategory(categories, true, false)
         .then(lockable => res.json(lockable))
@@ -121,7 +121,7 @@ lockablesController.post('/lockable/retrieve/readonly', (req: Request, res: Resp
  * Retrieves the latest lockable that can have a readwrite lock applied to it.
  */
 lockablesController.post('/lockable/retrieve/readwrite', (req: Request, res: Response) => {
-    const categories: string[] = req.body;
+    const categories: string[] = req.body.categories;
 
     lockableService.retrieveLatestInCategory(categories, false, false)
         .then(lockable => res.json(lockable))
