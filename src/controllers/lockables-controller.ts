@@ -69,12 +69,11 @@ lockablesController.post('/lockable/create-many', (req: Request, res: Response) 
 
 /**
  * Retrieves a lockable.
- * TODO: Rename 'method' to 'field' and update openapi.json.
  */
 lockablesController.post('/lockable/retrieve', (req: Request, res: Response) => {
-    const method: string = req.body.method;
+    const field: string = req.body.field;
 
-    if (method === 'id' || method === 'name' || method === 'createdOn') {
+    if (field === 'id' || field === 'name' || field === 'createdOn') {
         const value: string = req.body.value;
 
         if (typeof value !== 'string') {
@@ -84,10 +83,10 @@ lockablesController.post('/lockable/retrieve', (req: Request, res: Response) => 
             return;
         }
 
-        lockableService.retrieve(method, value)
+        lockableService.retrieve(field, value)
             .then(lockable => res.json(lockable))
             .catch(e => res.status(500).json(errorToObj(e)));
-    } else if (method === 'categories') {
+    } else if (field === 'categories') {
         const categories = req.body.value;
 
         // Verify categories is an array.
@@ -102,7 +101,7 @@ lockablesController.post('/lockable/retrieve', (req: Request, res: Response) => 
             .then(lockable => res.json(lockable))
             .catch(error => res.status(500).json(errorToObj(error)));
     } else {
-        res.status(400).json(errorToObj(new MessageError(`Method (${method}) isn't supported.`)));
+        res.status(400).json(errorToObj(new MessageError(`Method (${field}) isn't supported.`)));
         return;
     }
 });
@@ -155,10 +154,10 @@ lockablesController.put('/lockables/update-many', (req: Request, res: Response) 
  * Deletes a lockable.
  */
 lockablesController.post('/lockable/delete', (req: Request, res: Response) => {
-    const method: string = req.body.field;
-    const value: string = req.body.method;
+    const field: string = req.body.field;
+    const value: string = req.body.value;
 
-    if (typeof method !== 'string') {
+    if (typeof field !== 'string') {
         res.status(400).json(errorToObj(new Error('The request body had an'
                 + ' invalid field: method. Expected the type of the field to'
                 + ' be a string.')));
@@ -170,8 +169,8 @@ lockablesController.post('/lockable/delete', (req: Request, res: Response) => {
             return;
     }
 
-    if (method === 'id' || method === 'name') {
-        lockableService.delete(method, value)
+    if (field === 'id' || field === 'name') {
+        lockableService.delete(field, value)
             .then(success => res.json(success))
             .catch(e => res.status(500).json(errorToObj(e)));
     } else {

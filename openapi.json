@@ -475,11 +475,11 @@
         "retrieveRequest": {
             "type": "object",
             "required": [
-                "method",
+                "field",
                 "value"
             ],
             "properties": {
-                "method": {
+                "field": {
                     "type": "string"
                 },
                 "value": {
