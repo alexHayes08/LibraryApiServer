@@ -6,6 +6,5 @@ export interface LockableService extends CrudPlusPattern<Lockable, GenericLockab
     lock(lockable: Lockable, lock: GenericLockData): Promise<Lockable>;
     unlock(lockable: Lockable, lockId: string): Promise<Lockable>;
     retrieveLatestInCategory(categoryNames: string[],
-        isShared?: boolean,
-        isLocked?: boolean): Promise<Lockable>;
+        isReadonly?: boolean): Promise<Lockable>;
 }

@@ -113,42 +113,54 @@ export class MongoLockableService
     }
 
     public retrieveLatestInCategory(categoryNames: string[],
-            isShared?: boolean,
-            isLocked?: boolean): Promise<Lockable> {
+            isReadOnly: boolean = false): Promise<Lockable> {
         return new Promise(function(resolve, reject) {
             const findModel = {
-                categories: {
-                    $all: categoryNames
-                }
+                categories: categoryNames
             };
 
-            if (isShared !== undefined) {
+            if (isReadOnly === true) {
                 findModel['locks'] = {
                     $all: {
                         // tslint:disable-next-line:no-null-keyword
-                        unlockedAt: null,
                         isShared: true
                     }
                 };
-            } else if (isLocked !== undefined) {
+            } else {
                 findModel['locks'] = {
-                    $all: {
-                        // tslint:disable-next-line:no-null-keyword
-                        unlockedAt: null
-                    }
+                    $size: 0
                 };
             }
 
-            LockableModel.findOne(findModel)
+            LockableModel.find(findModel)
                 .sort({ createdOn: -1 })
                 .then(doc => {
                     // tslint:disable-next-line:no-null-keyword
-                    if (doc == null) {
-                        reject(new Error('Failed to find any lockables.'));
-                        return;
+                    if (doc == null || doc.length == 0) {
+
+                        if (isReadOnly === true) {
+                            findModel['locks'] = {
+                                $size: 0
+                            };
+                            LockableModel.find(findModel)
+                                .sort({ createdOn: -1 })
+                                .then(docs => {
+                                    if (docs === null || docs.length == 0) {
+                                        reject(new Error('Failed to find any lockables.'));
+                                        return;
+                                    }
+
+                                    const lockable = documentToLockable(docs[0]);
+                                    resolve(lockable);
+                                });
+                            return;
+                        } else {
+                            reject(new Error('Failed to find any lockables.'));
+                            return;
+                        }
                     }
 
-                    const lockable = documentToLockable(doc);
+                    const lockable = documentToLockable(doc[0]);
                     resolve(lockable);
                 })
                 .catch(error => reject(error));

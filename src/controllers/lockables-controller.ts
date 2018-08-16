@@ -112,7 +112,7 @@ lockablesController.post('/lockable/retrieve', (req: Request, res: Response) => 
 lockablesController.post('/lockable/retrieve/readonly', (req: Request, res: Response) => {
     const categories: string[] = req.body.categories;
 
-    lockableService.retrieveLatestInCategory(categories, true, false)
+    lockableService.retrieveLatestInCategory(categories, true)
         .then(lockable => res.json(lockable))
         .catch(error => res.status(500).json(errorToObj(error)));
 });
@@ -123,7 +123,7 @@ lockablesController.post('/lockable/retrieve/readonly', (req: Request, res: Resp
 lockablesController.post('/lockable/retrieve/readwrite', (req: Request, res: Response) => {
     const categories: string[] = req.body.categories;
 
-    lockableService.retrieveLatestInCategory(categories, false, false)
+    lockableService.retrieveLatestInCategory(categories, false)
         .then(lockable => res.json(lockable))
         .catch(error => res.status(500).json(errorToObj(error)));
 });
