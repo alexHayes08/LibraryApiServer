@@ -15,6 +15,7 @@ import { MessageError } from './models/errors';
 import { errorToObj } from './helpers/response-helpers';
 
 const app = express();
+app.set('view-engine', 'pug');
 app.set('trust proxy', true);
 app.set('port', process.env.PORT || 8080);
 app.use(bodyParser.json());
