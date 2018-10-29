@@ -14,7 +14,7 @@ export interface Paginate<T> {
 
 export interface Filter<T> {
     field: string|FieldPath|keyof T;
-    comparator: WhereFilterOp;
+    comparator: WhereFilterOp|string;
     value: any;
 }
 

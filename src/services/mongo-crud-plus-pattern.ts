@@ -187,6 +187,7 @@ export class MongoCrudPlusPattern<T extends Entity, U> implements CrudPlusPatter
 
             if (data.filters !== undefined) {
                 data.filters.map(filter => {
+                    query.where(filter.field);
                     switch (filter.comparator) {
                         case '<=':
                             query.gte(filter.value);
@@ -204,8 +205,12 @@ export class MongoCrudPlusPattern<T extends Entity, U> implements CrudPlusPatter
                             query.lte(filter.value);
                             break;
                         default:
-                            reject(new NotImplementedError());
-                            return;
+                            if (filter.comparator in query) {
+                                query[filter.comparator](filter.value);
+                            } else {
+                                reject(new NotImplementedError());
+                                return;
+                            }
                     }
                 });
             }

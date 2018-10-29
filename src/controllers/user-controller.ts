@@ -13,7 +13,7 @@ const oauth2Client = new google.auth.OAuth2(
     'redirect url'
 );
 
-// generate a url that asks permissions for Google+ and Google Calendar scopes
+// generate a url that asks permissions for Google+ and Directory scopes
 const scopes = [
     'https://www.googleapis.com/auth/plus.me',
     'https://www.googleapis.com/auth/admin.directory.orgunit.readonly'
@@ -39,7 +39,7 @@ export const userController = express.Router({
  */
 
 userController.get('/get-jwt', (req: Request, res: Response) => {
-    res.render('login.html', {
+  res.render('login.pug', {
         cache: true
     });
 });

@@ -5,7 +5,7 @@
         "title": "Lockables API",
         "version": "1.0.0"
     },
-    "host": "echo-api.endpoints.lockablesapi.cloud.goog",
+    "host": "lockablesapi.appspot.com",
     "consumes":[
         "application/json"
     ],
@@ -13,7 +13,19 @@
         "application/json"
     ],
     "schemes": [
-        "http"
+        "https"
+    ],
+    "securityDefinitions": {
+        "api_key": {
+            "type": "apiKey",
+            "name": "key",
+            "in": "query"
+        }
+    },
+    "security": [
+        {
+            "api_key": []
+        }
     ],
     "paths": {
         "/api/version": {
