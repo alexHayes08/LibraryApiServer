@@ -35,8 +35,12 @@ app.all('*', (req: Request, res: Response, next) => {
         authUser = Buffer.from(encodedInfo, 'base64').toJSON();
     }
 
-    req['user'] = authUser;
+    res.locals.user = authUser;
     next();
+});
+
+app.get('/', (req: Request, res: Response) => {
+    res.render('index.pug');
 });
 
 app.get('/api/version', (req: Request, res: Response) => {
