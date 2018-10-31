@@ -13,6 +13,7 @@ import { lockablesController } from './controllers/lockables-controller';
 import { lockController } from './controllers/lock-controller';
 import { MessageError } from './models/errors';
 import { errorToObj } from './helpers/response-helpers';
+import { taskController } from './controllers/task-controller';
 
 const app = express();
 app.set('view-engine', 'pug');
@@ -51,11 +52,13 @@ app.get('/api/running', (req: Request, res: Response) => {
 
 app.use('/api', lockablesController);
 app.use('/api', lockController);
+app.use('/api', taskController);
 
 /**
  * 404 handler.
  */
 app.all('*', (req: Request, res: Response) => {
+    console.error(req.path);
     res.status(404).json(errorToObj(new MessageError('Resource not found.')));
 });
 

@@ -10,6 +10,10 @@ export const taskController = express.Router({
 const lockableService: LockableService =
   container.get<LockableService>(TYPES.LockableService);
 
+taskController.get('/tasks', (req: Request, res: Response) => {
+  res.json({ test: 'hello world' });
+});
+
 taskController.all('/tasks/check-locks', async (req: Request, res: Response) => {
   res.status(200);
   for await (const lockable of getLockedLockables()) {
@@ -22,6 +26,23 @@ taskController.all('/tasks/check-locks', async (req: Request, res: Response) => 
       }
     }
   }
+});
+
+taskController.get('tasks/check-locks-test', async (req: Request, res: Response) => {
+  const results: Lockable[] = [];
+
+  try {
+    for await (const lockable of getLockedLockables()) {
+      results.push(lockable);
+    }
+  }
+  catch (error) {
+    console.error(error);
+  }
+
+  res.json({
+    results: results.map(r => r.name)
+  });
 });
 
 async function* getLockedLockables (): AsyncIterableIterator<Lockable> {
