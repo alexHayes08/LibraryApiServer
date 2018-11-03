@@ -5,7 +5,7 @@
         "title": "Lockables API",
         "version": "1.0.0"
     },
-    "host": "lockablesapi.appspot.com",
+    "host": "echo-api.endpoints.lockablesapi.cloud.goog",
     "consumes":[
         "application/json"
     ],
@@ -27,6 +27,42 @@
             "api_key": []
         }
     ],
+    "x-google-management": {
+        "metrics": [
+            {
+                "name": "read-requests",
+                "displayName": "Read requests",
+                "valueType": "INT64",
+                "metricKind": "DELTA"
+            },
+            {
+                "name": "write-requests",
+                "displayName": "Write requests",
+                "valueType": "INT64",
+                "metricKind": "DELTA"
+            }
+        ],
+        "quota": {
+            "limits": [
+                {
+                    "name": "read-requests-limit",
+                    "metric": "read-requests",
+                    "unit": "1/min/{project}",
+                    "values": {
+                        "STANDARD": 5000
+                    }
+                },
+                {
+                    "name": "write-request-limit",
+                    "metric": "write-requests",
+                    "unit": "1/min/{project}",
+                    "values": {
+                        "STANDARD": 5000
+                    }
+                }
+            ]
+        }
+    },
     "paths": {
         "/api/version": {
             "get": {

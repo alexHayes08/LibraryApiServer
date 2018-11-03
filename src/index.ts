@@ -29,16 +29,16 @@ app.use(session({
 }));
 
 // Authentication handler.
-// app.all('*', (req: Request, res: Response, next) => {
-//     let authUser: Object = { id: 'anonymous' };
-//     const encodedInfo = req.get('X-Endpoint-API-UserInfo');
-//     if (encodedInfo) {
-//         authUser = Buffer.from(encodedInfo, 'base64').toJSON();
-//     }
+app.all('*', (req: Request, res: Response, next) => {
+    let authUser: Object = { id: 'anonymous' };
+    const encodedInfo = req.get('X-Endpoint-API-UserInfo');
+    if (encodedInfo) {
+        authUser = Buffer.from(encodedInfo, 'base64').toJSON();
+    }
 
-//     res.locals.user = authUser;
-//     next();
-// });
+    res.locals.user = authUser;
+    next();
+});
 
 app.get('/api/version', (req: Request, res: Response) => {
     res.json({
