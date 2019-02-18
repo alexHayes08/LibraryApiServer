@@ -8,7 +8,7 @@ interface Configurations {
 
 const config: Configurations = {
     production: {
-        databaseConnectionString: 'mongodb://35.211.206.215:27107/libraryapi'
+        databaseConnectionString: 'monodb://mongodb-1-servers-vm-0/ligbraryapi?replicaSet=rs0'
     },
     development: {
         databaseConnectionString: 'mongodb://127.0.0.1:27017'

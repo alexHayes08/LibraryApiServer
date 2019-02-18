@@ -34,12 +34,11 @@ function generateLockableModel(index: number, categories: string[] = []): Generi
 }
 
 const generateLockables = function(numberOfLockables: number, lockableService: LockableService): Promise<Lockable[]> {
-    return new Promise(function(resolve, reject) {
-        const lockables: Lockable[] = [];
-        const promises = [];
+    return new Promise(async function(resolve, reject) {
+        const models = [];
 
         for (let i = 1; i <= numberOfLockables; i++) {
-            promises.push(lockableService.create({
+            models.push({
                 name: `TestV${i}`,
                 createdOn: new Date(),
                 categories: [
@@ -47,13 +46,12 @@ const generateLockables = function(numberOfLockables: number, lockableService: L
                     'purple'
                 ],
                 data: { }
-            })
-            .then(lockable => lockables.push(lockable))
-            .catch(error => reject(error)));
+            });
         }
 
-        Promise.all(promises)
-            .then(() => resolve(lockables));
+        const results = await lockableService.createMany(models);
+
+        resolve(results.results);
     });
 };
 
@@ -287,21 +285,8 @@ describe('lockable-service', () => {
             const lockableService = container
                 .get<LockableService>(TYPES.LockableService);
 
-            // Create three lockables
-            for (let i = 1; i < 4; i++) {
-                const name = `TestV${i}`;
-                const lockable = await lockableService.create({
-                    name: name,
-                    categories: [
-                        'purple',
-                        'blue'
-                    ],
-                    createdOn: new Date(),
-                    data: { }
-                });
-
-                lockables.push(lockable);
-            }
+            // Create lockables
+            const lockables = await generateLockables(6, lockableService);
 
             let now = new Date();
             let later = new Date();

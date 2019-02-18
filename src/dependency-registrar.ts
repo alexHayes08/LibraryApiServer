@@ -10,7 +10,8 @@ export const TYPES = {
     CategoryLockableMapService: Symbol.for('CategoryLockableMapService'),
     Database: Symbol.for('Database'),
     LockableService: Symbol.for('LockableService'),
-    LockService: Symbol.for('LockService')
+    LockService: Symbol.for('LockService'),
+    RandomDataService: Symbol.for('RandomDataService')
 };
 
 // Set up container.
@@ -38,3 +39,9 @@ container
     .to(MongoLockableService);
 
 export { container };
+
+import { RandomDataService } from './services/random-data-service';
+import { MongoRandomDataService } from './services/mongo-random-data-service';
+container
+    .bind<RandomDataService>(TYPES.RandomDataService)
+    .to(MongoRandomDataService);

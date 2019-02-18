@@ -122,7 +122,6 @@ export class MongoLockableService
             if (isReadOnly === true) {
                 findModel['locks'] = {
                     $all: {
-                        // tslint:disable-next-line:no-null-keyword
                         isShared: true
                     }
                 };

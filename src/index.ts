@@ -4,6 +4,7 @@ import * as dependecyRegistrar from './dependency-registrar';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import express, { Request, Response } from 'express';
+import path from 'path';
 import session from 'express-session';
 import fs from 'fs';
 import https from 'https';
@@ -17,6 +18,7 @@ import { taskController } from './controllers/task-controller';
 
 const app = express();
 app.set('view-engine', 'pug');
+app.set('views', path.join(__dirname, '../views'));
 app.set('trust proxy', true);
 app.set('port', process.env.PORT || 8080);
 app.use(bodyParser.json());

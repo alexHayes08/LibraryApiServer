@@ -138,4 +138,38 @@ export const CronJobModel = mongoose.model('CronJob', CronJobSchema);
 
 //#endregion
 
+//#region RandomDataRecord
+
+const RandomDataItemSchema = new Schema({
+    usedRecently: {
+        type: Boolean,
+        required: true
+    },
+    data: Object
+});
+
+RandomDataItemSchema.virtual('id').get(function () {
+    return this._id.toString();
+});
+
+const RandomDataSchema = new Schema({
+    items: {
+        type: [RandomDataItemSchema],
+        required: true
+    },
+    group: {
+        type: String,
+        required: true
+    }
+});
+
+RandomDataSchema.virtual('id').get(function () {
+    return this._id.toString();
+});
+
+export const RandomDataModel = mongoose.model('RandomData', RandomDataSchema);
+export const RandomDataItemModel = mongoose.model('RandomDataItem', RandomDataItemSchema);
+
+//#endregion
+
 //#endregion

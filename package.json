@@ -29,7 +29,7 @@
   "devDependencies": {
     "@types/express": "^4.16.0",
     "@types/express-session": "^1.15.10",
-    "@types/jest": "^23.1.1",
+    "@types/jest": "^23.3.14",
     "@types/node": "^10.3.3",
     "@types/shelljs": "^0.8.0",
     "@types/winston": "^2.3.9",
@@ -55,6 +55,7 @@
     "firebase-admin": "^5.12.1",
     "googleapis": "^34.0.0",
     "inversify": "^4.13.0",
+    "linq": "^3.1.1",
     "mongoose": "^5.2.5",
     "pug": "^2.0.3",
     "reflect-metadata": "^0.1.12",

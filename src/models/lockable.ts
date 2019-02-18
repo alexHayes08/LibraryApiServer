@@ -1,4 +1,5 @@
 import { Lock } from './lock';
+import { Entity } from './entity';
 
 export interface GenericLockableData {
     name: string;
@@ -9,12 +10,11 @@ export interface GenericLockableData {
     };
 }
 
-export interface LockableData extends GenericLockableData {
-    id: string;
+export interface LockableData extends GenericLockableData, Entity {
     locks: Lock[];
 }
 
-export class Lockable {
+export class Lockable implements Entity {
     //#region Fields
 
     public id: string;

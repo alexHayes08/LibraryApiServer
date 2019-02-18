@@ -1,4 +1,4 @@
-import { Document, Model, Types, Collection } from 'mongoose';
+import { Document, Model, Types, Collection, model } from 'mongoose';
 
 import { CrudPlusPattern } from './crud-plus-pattern';
 import { Entity } from '../models/entity';
@@ -47,25 +47,12 @@ export class MongoCrudPlusPattern<T extends Entity, U> implements CrudPlusPatter
                 return new self.model(d);
             });
 
-            self.model.collection.insertMany(models)
-                .then(result => {
-                    const ids: string[] = [];
+            self.model.insertMany(models)
+                .then(insertedDocs => {
+                    const results = insertedDocs
+                        .map(d => self.documentToModel(d));
 
-                    for (let i = 0; i < result.insertedCount; i++) {
-                        const id = result.insertedIds[i].toHexString();
-                        ids.push(id);
-                    }
-
-                    self.paginate({
-                            limit: models.length,
-                            filters: ids.map(id => <Filter<T>>{
-                                field: 'id',
-                                comparator: '==',
-                                value: id
-                            })
-                        })
-                    .then(paginationResults => resolve(paginationResults))
-                    .catch(error => reject(error));
+                    resolve({ results });
                 })
                 .catch(error => reject(error));
         });
@@ -76,7 +63,7 @@ export class MongoCrudPlusPattern<T extends Entity, U> implements CrudPlusPatter
         return new Promise(function(resolve, reject) {
             const findResultCallback = function(doc?: Document) {
                 if (doc === undefined) {
-                    reject(new Error('Failed to find Lock.'));
+                    reject(new Error('Failed to find item.'));
                     return;
                 }
 
