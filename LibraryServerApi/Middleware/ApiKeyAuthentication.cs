@@ -18,7 +18,7 @@ namespace LibraryServerApi.Middleware
 
         public async Task InvokeAsync(HttpContext context)
         {
-            if (context.Request.Path.StartsWithSegments(new PathString("api")))
+            if (context.Request.Path.StartsWithSegments(new PathString("/api")))
             {
                 string apiKey = null;
 

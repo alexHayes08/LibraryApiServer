@@ -19,7 +19,10 @@ namespace LibraryServerApi.Service
 
         public ApiKeyService(IMongoCollection<ApiKeyModel> apiKeyCollection)
             : base(apiKeyCollection)
-        { }
+        {
+            rngCryptoServiceProvider = new RNGCryptoServiceProvider();
+            random = new Random();
+        }
 
         #endregion
 

@@ -87,6 +87,7 @@ namespace LibraryServerApi
 
             // Tasks.
             services.AddHostedService<CheckLockableLeasesTask>();
+            services.AddHostedService<AssertKeysExistTask>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
