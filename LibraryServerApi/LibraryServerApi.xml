@@ -1,0 +1,414 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>LibraryServerApi</name>
+    </assembly>
+    <members>
+        <member name="T:LibraryServerApi.Controllers.LockableController">
+            <summary>
+            Controller for managing <c>Lockable</c>s.
+            </summary>
+            <seealso cref="T:Microsoft.AspNetCore.Mvc.ControllerBase" />
+        </member>
+        <member name="M:LibraryServerApi.Controllers.LockableController.#ctor(LibraryServerApi.Service.ILockableService)">
+            <summary>
+            Initializes a new instance of the <see cref="T:LibraryServerApi.Controllers.LockableController"/> class.
+            </summary>
+            <param name="lockablesService">The lockables service.</param>
+        </member>
+        <member name="M:LibraryServerApi.Controllers.LockableController.Create(LibraryServerApi.Models.BaseRequest{LibraryServerApi.Models.Lockable.Lockable})">
+            <summary>
+            Creates the specified lockable.
+            </summary>
+            <param name="lockable">The lockable.</param>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryServerApi.Controllers.LockableController.CreateMany(LibraryServerApi.Models.BaseRequest{System.Collections.Generic.IEnumerable{LibraryServerApi.Models.Lockable.Lockable}})">
+            <summary>
+            Bulk version of create.
+            </summary>
+            <param name="lockables">The lockables.</param>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryServerApi.Controllers.LockableController.Retrieve(LibraryServerApi.Models.BaseRequest{System.String})">
+            <summary>
+            Retrieves the specified identifier.
+            </summary>
+            <param name="id">The identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryServerApi.Controllers.LockableController.Update(LibraryServerApi.Models.BaseRequest{LibraryServerApi.Models.Lockable.Lockable})">
+            <summary>
+            Updates the specified lockable.
+            </summary>
+            <param name="lockable">The lockable.</param>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryServerApi.Controllers.LockableController.UpdateMany(LibraryServerApi.Models.BaseRequest{System.Collections.Generic.IEnumerable{LibraryServerApi.Models.Lockable.Lockable}})">
+            <summary>
+            Updates the many.
+            </summary>
+            <param name="lockables">The lockables.</param>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryServerApi.Controllers.LockableController.Delete(LibraryServerApi.Models.BaseRequest{System.String})">
+            <summary>
+            Deletes the specified identifier.
+            </summary>
+            <param name="id">The identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryServerApi.Controllers.LockableController.DeleteMany(LibraryServerApi.Models.BaseRequest{System.Collections.Generic.IEnumerable{System.String}})">
+            <summary>
+            Deletes the many.
+            </summary>
+            <param name="ids">The ids.</param>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryServerApi.Controllers.LockableController.Paginate(LibraryServerApi.Models.BaseRequest{LibraryServerApi.Models.Pagination.Paginate{LibraryServerApi.Models.Lockable.Lockable}})">
+            <summary>
+            Paginates.
+            </summary>
+            <param name="paginate">The paginate.</param>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryServerApi.Controllers.LockableController.RetrieveReadOnly(LibraryServerApi.Models.BaseRequest{System.Collections.Generic.IEnumerable{System.String}})">
+            <summary>
+            Retrieves a lockable that has read only locks or no locks.
+            </summary>
+            <param name="categories">The categories.</param>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryServerApi.Controllers.LockableController.RetrieveReadWrite(LibraryServerApi.Models.BaseRequest{System.Collections.Generic.IEnumerable{System.String}})">
+            <summary>
+            Retrieves a lockable that has no locks on it.
+            </summary>
+            <param name="categories">The categories.</param>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryServerApi.Controllers.LockableController.Lock(LibraryServerApi.Models.BaseRequest{LibraryServerApi.Models.Lockable.LockRequest})">
+            <summary>
+            Locks the specified lockable.
+            </summary>
+            <param name="lockable">The lockable.</param>
+            <param name="lock">The lock.</param>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryServerApi.Controllers.LockableController.Unlock(LibraryServerApi.Models.BaseRequest{LibraryServerApi.Models.Lockable.UnlockRequest})">
+            <summary>
+            Unlocks a lockable.
+            </summary>
+            <param name="unlockRequest">The unlock request.</param>
+            <returns></returns>
+        </member>
+        <member name="T:LibraryServerApi.Controllers.LockRecordController">
+            <summary>
+            Controller responsible for managing <c>LockRecord</c>s.
+            </summary>
+            <seealso cref="T:Microsoft.AspNetCore.Mvc.ControllerBase" />
+        </member>
+        <member name="M:LibraryServerApi.Controllers.LockRecordController.#ctor(LibraryServerApi.Service.ILockRecordService)">
+            <summary>
+            Initializes a new instance of the <see cref="T:LibraryServerApi.Controllers.LockRecordController"/> class.
+            </summary>
+            <param name="lockRecordService">The lock record service.</param>
+        </member>
+        <member name="M:LibraryServerApi.Controllers.LockRecordController.Retrieve(LibraryServerApi.Models.BaseRequest{System.String})">
+            <summary>
+            Retrieves the specified identifier.
+            </summary>
+            <param name="id">The identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryServerApi.Controllers.LockRecordController.Paginate(LibraryServerApi.Models.BaseRequest{LibraryServerApi.Models.Pagination.Paginate{LibraryServerApi.Models.Lock.LockRecord}})">
+            <summary>
+            Paginates the <c>LockRecord</c>s.
+            </summary>
+            <param name="paginate">The paginate.</param>
+            <returns></returns>
+        </member>
+        <member name="T:LibraryServerApi.Extensions.ExpressionExtensions">
+            <summary>
+            Contains extensions for <c>Expression</c>s.
+            </summary>
+        </member>
+        <member name="M:LibraryServerApi.Extensions.ExpressionExtensions.GetNameFromLambdaExpression``2(System.Linq.Expressions.Expression{System.Func{``0,``1}})">
+            <summary>
+            Gets the name from lambda expression.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <typeparam name="V"></typeparam>
+            <param name="expression">The expression.</param>
+            <returns></returns>
+            <exception cref="T:System.NotImplementedException">
+            Thrown if the expression body is neither a MemberExpression nor
+            UnaryExpression.
+            </exception>
+        </member>
+        <member name="T:LibraryServerApi.Models.BaseEntity">
+            <summary>
+            Base class for models that have an id property.
+            </summary>
+        </member>
+        <member name="T:LibraryServerApi.Models.BaseRequest`1">
+            <summary>
+            A wrapper class for requests.
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:LibraryServerApi.Models.Lockable.Lockable">
+            <summary>
+            Lockable.
+            </summary>
+            <seealso cref="T:LibraryServerApi.Models.BaseEntity" />
+        </member>
+        <member name="M:LibraryServerApi.Models.Lockable.Lockable.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:LibraryServerApi.Models.Lockable.Lockable"/> class.
+            </summary>
+        </member>
+        <member name="P:LibraryServerApi.Models.Lockable.Lockable.Locks">
+            <summary>
+            Gets or sets the locks.
+            </summary>
+            <value>
+            The locks.
+            </value>
+        </member>
+        <member name="P:LibraryServerApi.Models.Lockable.Lockable.Name">
+            <summary>
+            Gets or sets the name.
+            </summary>
+            <value>
+            The name.
+            </value>
+        </member>
+        <member name="P:LibraryServerApi.Models.Lockable.Lockable.CreatedOn">
+            <summary>
+            Gets or sets the created on.
+            </summary>
+            <value>
+            The created on.
+            </value>
+        </member>
+        <member name="P:LibraryServerApi.Models.Lockable.Lockable.Categories">
+            <summary>
+            Gets or sets the categories.
+            </summary>
+            <value>
+            The categories.
+            </value>
+        </member>
+        <member name="P:LibraryServerApi.Models.Lockable.Lockable.Data">
+            <summary>
+            Gets or sets the data.
+            </summary>
+            <value>
+            The data.
+            </value>
+        </member>
+        <member name="M:LibraryServerApi.Models.Lockable.Lockable.GetActiveLocks">
+            <summary>
+            Gets the active locks.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryServerApi.Models.Lockable.Lockable.GetInactiveLocks">
+            <summary>
+            Gets the inactive locks.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryServerApi.Models.Lockable.Lockable.IsLocked">
+            <summary>
+            Determines whether this instance is locked.
+            </summary>
+            <returns>
+              <c>true</c> if this instance is locked; otherwise, <c>false</c>.
+            </returns>
+        </member>
+        <member name="M:LibraryServerApi.Models.Lockable.Lockable.IsShared">
+            <summary>
+            Determines whether this instance is shared.
+            </summary>
+            <returns>
+              <c>true</c> if this instance is shared; otherwise, <c>false</c>.
+            </returns>
+        </member>
+        <member name="M:LibraryServerApi.Models.Pagination.PaginationResults`1.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:LibraryServerApi.Models.Pagination.PaginationResults`1"/> class.
+            </summary>
+        </member>
+        <member name="M:LibraryServerApi.Models.Pagination.PaginationResults`1.#ctor(System.Collections.Generic.IEnumerable{`0},LibraryServerApi.Models.Pagination.Paginate{`0},LibraryServerApi.Models.Pagination.Paginate{`0},System.Int64)">
+            <summary>
+            Initializes a new instance of the <see cref="T:LibraryServerApi.Models.Pagination.PaginationResults`1"/> class.
+            </summary>
+            <param name="results">The results.</param>
+            <param name="next">The next.</param>
+            <param name="previous">The previous.</param>
+            <param name="totalCount">The total count.</param>
+            <exception cref="T:System.ArgumentNullException">results</exception>
+        </member>
+        <member name="T:LibraryServerApi.Service.CrudPlusPattern`1">
+            <summary>
+            Default implementation of the ICrudPlusPattern{T}.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <seealso cref="T:LibraryServerApi.Service.ICrudPlusPattern`1" />
+        </member>
+        <member name="M:LibraryServerApi.Service.CrudPlusPattern`1.#ctor(MongoDB.Driver.IMongoCollection{`0})">
+            <summary>
+            Initializes a new instance of the <see cref="T:LibraryServerApi.Service.CrudPlusPattern`1"/> class.
+            </summary>
+            <param name="configuration">The configuration.</param>
+            <param name="collectionName">The name of the collection.</param>
+        </member>
+        <member name="M:LibraryServerApi.Service.ICrudPlusPattern`1.CreateAsync(`0,System.Nullable{System.Threading.CancellationToken})">
+            <summary>
+            Creates the specified model.
+            </summary>
+            <param name="model">The model.</param>
+            <param name="cancellationToken">The cancellation token.</param>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryServerApi.Service.ICrudPlusPattern`1.CreateManyAsync(System.Collections.Generic.IEnumerable{`0},System.Nullable{System.Threading.CancellationToken})">
+            <summary>
+            Bulk version of Create.
+            </summary>
+            <param name="models">The models.</param>
+            <param name="cancellationToken">The cancellation token.</param>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryServerApi.Service.ICrudPlusPattern`1.RetrieveAsync``1(System.Linq.Expressions.Expression{System.Func{`0,``0}},``0,System.Nullable{System.Threading.CancellationToken})">
+            <summary>
+            Retrieves the specified field.
+            </summary>
+            <typeparam name="V"></typeparam>
+            <param name="field">The field.</param>
+            <param name="value">The value.</param>
+            <param name="cancellationToken">The cancellation token.</param>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryServerApi.Service.ICrudPlusPattern`1.RetrieveAsync(System.String,System.Object,System.Nullable{System.Threading.CancellationToken})">
+            <summary>
+            Retrieves the specified field name.
+            </summary>
+            <param name="fieldName">Name of the field.</param>
+            <param name="value">The value.</param>
+            <param name="cancellationToken">The cancellation token.</param>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryServerApi.Service.ICrudPlusPattern`1.UpdateAsync(`0,System.Nullable{System.Threading.CancellationToken})">
+            <summary>
+            Updates the specified model.
+            </summary>
+            <param name="model">The model.</param>
+            <param name="cancellationToken">The cancellation token.</param>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryServerApi.Service.ICrudPlusPattern`1.UpdateManyAsync(System.Collections.Generic.IEnumerable{`0},System.Nullable{System.Threading.CancellationToken})">
+            <summary>
+            Updates the many.
+            </summary>
+            <param name="models">The models.</param>
+            <param name="cancellationToken">The cancellation token.</param>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryServerApi.Service.ICrudPlusPattern`1.DeleteAsync(`0,System.Nullable{System.Threading.CancellationToken})">
+            <summary>
+            Deletes the specified model.
+            </summary>
+            <param name="model">The model.</param>
+            <param name="cancellationToken">The cancellation token.</param>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryServerApi.Service.ICrudPlusPattern`1.DeleteManyAsync(System.Collections.Generic.IEnumerable{`0},System.Nullable{System.Threading.CancellationToken})">
+            <summary>
+            Deletes the many.
+            </summary>
+            <param name="models">The models.</param>
+            <param name="cancellationToken">The cancellation token.</param>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryServerApi.Service.ICrudPlusPattern`1.PaginateAsync(LibraryServerApi.Models.Pagination.Paginate{`0},System.Nullable{System.Threading.CancellationToken})">
+            <summary>
+            Paginates the specified data.
+            </summary>
+            <param name="data">The data.</param>
+            <param name="cancellationToken">The cancellation token.</param>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryServerApi.Service.ICrudPlusPattern`1.Query">
+            <summary>
+            Queries this instance.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:LibraryServerApi.Service.ILockableService">
+            <summary>
+            Service for managing <c>Lockable</c>s.
+            </summary>
+            <seealso cref="!:LibraryServerApi.Service.ICrudPlusPattern&lt;LibraryServerApi.Models.Lockable.Lockable&gt;" />
+        </member>
+        <member name="M:LibraryServerApi.Service.ILockableService.LockAsync(LibraryServerApi.Models.Lockable.Lockable,LibraryServerApi.Models.Lock.Lock)">
+            <summary>
+            Locks the specified lockable.
+            </summary>
+            <param name="lockable">The lockable.</param>
+            <param name="lock">The lock.</param>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryServerApi.Service.ILockableService.RetrieveLatestInCategoryAsync(System.Collections.Generic.IEnumerable{System.String},System.Boolean)">
+            <summary>
+            Retrieves the latest in category.
+            </summary>
+            <param name="categoryNames">The category names.</param>
+            <param name="isReadonly">
+            If true then only lockables that have either no locks or readonly
+            locks will be returned.
+            </param>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryServerApi.Service.ILockableService.UnlockAsync(LibraryServerApi.Models.Lockable.Lockable,System.String)">
+            <summary>
+            Unlocks the specified lockable.
+            </summary>
+            <param name="lockable">The lockable.</param>
+            <param name="lockId">The lock identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="T:LibraryServerApi.Service.ILockRecordService">
+            <summary>
+            Manages <c>LockRecord</c>s.
+            </summary>
+            <seealso cref="!:LibraryServerApi.Service.ICrudPlusPattern&lt;LibraryServerApi.Models.Lock.LockRecord&gt;" />
+        </member>
+        <member name="T:LibraryServerApi.Service.IRandomDataService">
+            <summary>
+            Manages <c>RandomDataCollection</c>s.
+            </summary>
+            <seealso cref="!:LibraryServerApi.Service.ICrudPlusPattern&lt;LibraryServerApi.Models.RandomData.RandomDataCollection&gt;" />
+        </member>
+        <member name="M:LibraryServerApi.Service.IRandomDataService.GetRandomDataItemAsync(System.String)">
+            <summary>
+            Gets a random data item of the collection or null if the either the
+            collection doesn't exist or the collection has no items.
+            </summary>
+            <param name="groupName">Name of the group.</param>
+            <returns></returns>
+        </member>
+        <member name="T:LibraryServerApi.Service.LockRecordService">
+            <summary>
+            Manages <c>LockRecord</c>s.
+            </summary>
+            <seealso cref="!:LibraryServerApi.Service.CrudPlusPattern&lt;LibraryServerApi.Models.Lock.LockRecord&gt;" />
+        </member>
+        <member name="M:LibraryServerApi.Service.LockRecordService.#ctor(MongoDB.Driver.IMongoCollection{LibraryServerApi.Models.Lock.LockRecord})">
+            <summary>
+            Initializes a new instance of the <see cref="T:LibraryServerApi.Service.LockRecordService"/> class.
+            </summary>
+            <param name="mongoCollection">The mongo collection.</param>
+        </member>
+    </members>
+</doc>

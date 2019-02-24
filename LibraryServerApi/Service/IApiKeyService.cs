@@ -14,5 +14,11 @@ namespace LibraryServerApi.Service
         /// <param name="key">The key.</param>
         /// <returns></returns>
         Task<ApiKeyValidationResponse> IsValidKeyAsync(string key);
+
+        /// <summary>
+        /// Generates a new key.
+        /// </summary>
+        /// <returns></returns>
+        Task<ApiKeyModel> GenerateNewKey();
     }
 }
