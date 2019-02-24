@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 using LibraryServerApi.Models.ApiKey;
+using LibraryServerApi.Models.Pagination;
 using MongoDB.Driver;
 
 namespace LibraryServerApi.Service
@@ -62,6 +65,26 @@ namespace LibraryServerApi.Service
             };
 
             return CreateAsync(model);
+        }
+
+        public override Task<ApiKeyModel> CreateAsync(ApiKeyModel model, CancellationToken? cancellationToken = null)
+        {
+            model.Created = DateTime.Now;
+
+            return base.CreateAsync(model, cancellationToken);
+        }
+
+        public override Task<PaginationResults<ApiKeyModel>> CreateManyAsync(IEnumerable<ApiKeyModel> models, CancellationToken? cancellationToken = null)
+        {
+            foreach (var model in models)
+            {
+                model.Created = DateTime.Now;
+
+                if (model.Expires == default(DateTime))
+                    model.Expires = DateTime.Now.AddYears(1);
+            }
+
+            return base.CreateManyAsync(models, cancellationToken);
         }
 
         #endregion
