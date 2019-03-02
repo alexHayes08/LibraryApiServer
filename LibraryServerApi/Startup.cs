@@ -73,6 +73,9 @@ namespace LibraryServerApi
                 var connectionString = configuration
                     .GetConnectionString(connectionStringKey);
 
+                if (String.IsNullOrEmpty(connectionStringKey))
+                    throw new Exception("Failed to retrieve the connection string.");
+
                 var client = new MongoClient(connectionString);
                 var db = client.GetDatabase("libraryapi");
 
